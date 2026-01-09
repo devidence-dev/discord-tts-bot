@@ -1,1 +1,1 @@
-bot: npm start
+bot: bun start

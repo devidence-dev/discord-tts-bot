@@ -4,13 +4,13 @@
   "description": "A simple Discord TTS Bot that uses the Google Translate TTS API.",
   "main": "./src/app.js",
   "scripts": {
-    "start": "node ./src/app.js",
-    "debug": "node ./src/app.js --debug",
-    "dev": "nodemon --exec npm start",
-    "lint:errors-only": "node_modules/.bin/eslint src --quiet",
-    "lint": "node_modules/.bin/eslint src",
-    "deploy": "node ./src/command-deployer.js",
-    "start-sharded": "node ./src/sharded-client.js"
+    "start": "bun ./src/app.js",
+    "debug": "bun ./src/app.js --debug",
+    "dev": "bun --watch ./src/app.js",
+    "lint:errors-only": "bunx eslint src --quiet",
+    "lint": "bunx eslint src",
+    "deploy": "bun ./src/command-deployer.js",
+    "start-sharded": "bun ./src/sharded-client.js"
   },
   "engines": {
     "node": ">=16.6"

@@ -1,0 +1,25 @@
+services:
+  discord-tts:
+    container_name: discord-tts-bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - discord-tts-net
+    environment:
+      TZ: ${TZ:-UTC}
+    volumes:
+      - ${DISCORD_TTS_CONFIG:-/data/discord-tts}/config:/opt/app/config
+      - ${DISCORD_TTS_CONFIG:-/data/discord-tts}/data:/opt/app/data
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 512M
+
+networks:
+  discord-tts-net:
+    driver: bridge
+
