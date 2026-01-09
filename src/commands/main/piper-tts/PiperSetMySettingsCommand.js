@@ -1,5 +1,5 @@
 const { SlashCommand } = require('@greencoast/discord.js-extended');
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 const PiperProvider = require('../../../classes/tts/providers/PiperProvider');
 
 class PiperSetMySettingsCommand extends SlashCommand {

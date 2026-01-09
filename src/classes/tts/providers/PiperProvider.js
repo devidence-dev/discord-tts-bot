@@ -1,78 +1,52 @@
-const { spawn } = require('child_process');
-const { Readable } = require('stream');
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 const AbstractProvider = require('./AbstractProvider');
 const Payload = require('../Payload');
-const path = require('path');
 
 /**
  * A concrete TTS provider for Piper TTS.
- * Provides natural-sounding voices with offline support.
+ * Communicates with piper-tts service via HTTP.
  */
 class PiperProvider extends AbstractProvider {
   constructor(client) {
     super(client);
-    this.modelsDir = path.join(process.cwd(), 'piper-models');
+    this.piperServiceUrl = process.env.PIPER_SERVICE_URL || 'http://piper-tts:8000';
   }
 
   createPayload(sentence, extras) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
-        // Construir el nombre del modelo
-        const modelName = `${extras.language}-${extras.voice}`;
-        const modelPath = path.join(this.modelsDir, `${modelName}.onnx`);
+        // Validar parámetros
+        const params = {
+          text: sentence,
+          language: extras.language || 'es_MX',
+          voice: extras.voice || 'ald',
+          speed: extras.speed || 'normal'
+        };
 
-        // Crear stream de audio usando Piper
-        const audioStream = this._generateAudioStream(sentence, modelPath, extras);
+        // Hacer petición al servicio Piper
+        const response = await axios.get(`${this.piperServiceUrl}/synthesize`, {
+          params,
+          responseType: 'arraybuffer',
+          timeout: 30000 // 30 segundos timeout
+        });
 
-        const payload = new Payload(audioStream, sentence, PiperProvider.NAME, extras);
+        // Guardar audio en archivo temporal
+        const tempFile = `/tmp/piper_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.wav`;
+        fs.writeFileSync(tempFile, response.data);
+
+        // Crear payload con la ruta del archivo
+        const payload = new Payload(tempFile, sentence, PiperProvider.NAME, extras);
         resolve(payload);
       } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  _generateAudioStream(sentence, modelPath, extras) {
-    return new Readable({
-      read() {
-        // El stream será poblado por el proceso Piper
-      },
-
-      destroy(error, callback) {
-        if (piperProcess) {
-          piperProcess.kill();
+        if (error.response?.status === 404) {
+          reject(new Error(`Model not found: ${extras.language}-${extras.voice}. Download it first.`));
+        } else if (error.code === 'ECONNREFUSED') {
+          reject(new Error('Piper TTS service is not running. Start piper-tts container.'));
+        } else {
+          reject(new Error(`Piper TTS error: ${error.message}`));
         }
-        callback(error);
-      }
-    }).on('pipe', () => {
-      this._spawnPiperProcess(sentence, modelPath, extras);
-    });
-  }
-
-  _spawnPiperProcess(sentence, modelPath, extras) {
-    const piperProcess = spawn('piper', [
-      '--model', modelPath,
-      '--output-file', '/dev/stdout',
-      '--speaker', extras.speaker || '0',
-      '--length-scale', extras.speed === 'fast' ? '0.8' : (extras.speed === 'slow' ? '1.2' : '1.0')
-    ]);
-
-    piperProcess.stdin.write(sentence);
-    piperProcess.stdin.end();
-
-    piperProcess.stdout.pipe(this.audioStream);
-
-    piperProcess.stderr.on('data', (data) => {
-      console.error(`Piper error: ${data}`);
-    });
-
-    piperProcess.on('error', (error) => {
-      console.error('Failed to start Piper process:', error);
-    });
-
-    piperProcess.on('close', (code) => {
-      if (code !== 0) {
-        console.error(`Piper process exited with code ${code}`);
       }
     });
   }
@@ -84,13 +58,40 @@ class PiperProvider extends AbstractProvider {
 }
 
 PiperProvider.NAME = 'Piper';
+
+PiperProvider.SUPPORTED_VOICES = [
+  { name: '🇲🇽 Spanish (Mexico) - Alloy', value: 'es_MX-ald-medium' },
+  { name: '🇪🇸 Spanish (Spain)', value: 'es_ES-mls' },
+  { name: '🇺🇸 English (US)', value: 'en_US' },
+  { name: '🇬🇧 English (UK)', value: 'en_GB' },
+  { name: '🇫🇷 French', value: 'fr_FR' },
+  { name: '🇩🇪 German', value: 'de_DE' },
+  { name: '🇮🇹 Italian', value: 'it_IT' },
+];
+
+PiperProvider.SUPPORTED_LANGUAGES = [
+  { name: 'Spanish (Mexico)', value: 'es_MX' },
+  { name: 'Spanish (Spain)', value: 'es_ES' },
+  { name: 'English (US)', value: 'en_US' },
+  { name: 'English (UK)', value: 'en_GB' },
+  { name: 'French', value: 'fr_FR' },
+  { name: 'German', value: 'de_DE' },
+  { name: 'Italian', value: 'it_IT' },
+];
+
+PiperProvider.getSupportedLanguages = function() {
+  return this.SUPPORTED_LANGUAGES;
+};
+
+PiperProvider.getSupportedVoices = function() {
+  return this.SUPPORTED_VOICES;
+};
 PiperProvider.FRIENDLY_NAME = 'Piper TTS Provider';
 
-PiperProvider.EXTRA_FIELDS = ['language', 'voice', 'speaker', 'speed'];
+PiperProvider.EXTRA_FIELDS = ['language', 'voice', 'speed'];
 PiperProvider.EXTRA_DEFAULTS = {
   language: 'es_MX',
   voice: 'ald',
-  speaker: '0',
   speed: 'normal'
 };
 

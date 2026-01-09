@@ -25,4 +25,13 @@ COPY uv.lock ./
 # --no-install-project: NO instala el proyecto raíz, pero sí sus dependencias
 RUN uv sync --frozen --no-dev --no-editable --no-install-project
 
-CMD ["sh", "-lc", "echo 'Piper TTS deps ready. Use docker exec to download voices.'"]
+ENV PATH="/opt/app/.venv/bin:$PATH"
+
+# Copiar servidor Piper
+COPY piper-server.py ./
+
+# Exponer puerto
+EXPOSE 8000
+
+# Ejecutar servidor FastAPI con unbuffered output para ver logs
+CMD ["python", "-u", "piper-server.py"]

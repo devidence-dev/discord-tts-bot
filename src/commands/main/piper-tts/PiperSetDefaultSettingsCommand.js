@@ -1,5 +1,5 @@
 const { SlashCommand } = require('@greencoast/discord.js-extended');
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { PermissionsBitField, SlashCommandBuilder } = require('discord.js');
 const PiperProvider = require('../../../classes/tts/providers/PiperProvider');
 
 class PiperSetDefaultSettingsCommand extends SlashCommand {
@@ -10,9 +10,9 @@ class PiperSetDefaultSettingsCommand extends SlashCommand {
       emoji: ':speaking_head:',
       group: 'piper-tts',
       guildOnly: true,
-      defaultMemberPermissions: ['ADMINISTRATOR'],
+      userPermissions: [PermissionsBitField.Flags.ManageGuild],
       dataBuilder: new SlashCommandBuilder()
-        .setDefaultMemberPermissions('ADMINISTRATOR')
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild)
         .addStringOption((input) => {
           return input
             .setName('language')

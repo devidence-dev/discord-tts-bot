@@ -27,7 +27,8 @@ client.registry
     ['google-tts', 'Google TTS Commands'],
     ['other-tts', 'Other TTS Commands'],
     ['misc', 'Miscellaneous Commands'],
-    ['ms-tts', 'Microsoft TTS Commands']
+    ['ms-tts', 'Microsoft TTS Commands'],
+    ['piper-tts', 'Piper TTS Commands']
   ])
   .registerCommandsIn(path.join(__dirname, './commands/main'));
 
