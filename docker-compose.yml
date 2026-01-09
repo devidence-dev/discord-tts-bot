@@ -13,11 +13,28 @@ services:
     volumes:
       - ${DISCORD_TTS_CONFIG:-/data/discord-tts}/config:/opt/app/config
       - ${DISCORD_TTS_CONFIG:-/data/discord-tts}/data:/opt/app/data
+      - ${DISCORD_TTS_CONFIG:-/data/discord-tts}/piper-models:/opt/app/piper-models
     deploy:
       resources:
         limits:
           cpus: '4'
           memory: 512M
+
+  piper-tts:
+    container_name: piper-tts
+    build:
+      context: .
+      dockerfile: Dockerfile.piper
+    restart: unless-stopped
+    networks:
+      - discord-tts-net
+    volumes:
+      - ${DISCORD_TTS_CONFIG:-/data/discord-tts}/piper-models:/opt/app/piper-models
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 256M
 
 networks:
   discord-tts-net:

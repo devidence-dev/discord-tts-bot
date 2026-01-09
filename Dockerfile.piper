@@ -1,0 +1,28 @@
+FROM python:3.13.11-slim
+
+# Copiar uv desde imagen oficial
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Dependencias del sistema para Piper
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    espeak-ng \
+    ffmpeg \
+    ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/app
+
+# Crear directorio para modelos/voices
+RUN mkdir -p /opt/app/piper-models
+
+# Copiar metadata de dependencias (mejor caching)
+COPY pyproject.toml ./
+COPY uv.lock ./
+
+# Instalar SOLO dependencias (omite instalar el proyecto local)
+# --no-editable: no instala el proyecto como editable
+# --no-dev: excluye dependencias de desarrollo
+# --no-install-project: NO instala el proyecto raíz, pero sí sus dependencias
+RUN uv sync --frozen --no-dev --no-editable --no-install-project
+
+CMD ["sh", "-lc", "echo 'Piper TTS deps ready. Use docker exec to download voices.'"]
