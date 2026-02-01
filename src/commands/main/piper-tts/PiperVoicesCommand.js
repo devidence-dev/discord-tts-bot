@@ -73,7 +73,7 @@ class PiperVoicesCommand extends SlashCommand {
   }
 
   async run(interaction) {
-    const localizer = this.client.getLocalizer(interaction.guildId);
+    const localizer = this.client.localizer.getLocalizer(interaction.guild);
 
     try {
       const embed = await this.createEmbed(localizer);

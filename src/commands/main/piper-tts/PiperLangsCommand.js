@@ -44,7 +44,7 @@ class PiperLangsCommand extends SlashCommand {
   }
 
   async run(interaction) {
-    const localizer = this.client.getLocalizer(interaction.guildId);
+    const localizer = this.client.localizer.getLocalizer(interaction.guild);
     const embed = this.createEmbed(localizer);
     return interaction.reply({ embeds: [embed] });
   }

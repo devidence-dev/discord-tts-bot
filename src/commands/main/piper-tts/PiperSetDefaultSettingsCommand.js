@@ -56,7 +56,7 @@ class PiperSetDefaultSettingsCommand extends SlashCommand {
     const language = interaction.options.getString('language');
     const voice = interaction.options.getString('voice');
     const speed = interaction.options.getString('speed');
-    const localizer = this.client.getLocalizer(interaction.guildId);
+    const localizer = this.client.localizer.getLocalizer(interaction.guild);
 
     const settings = {};
     if (language) settings.language = language;

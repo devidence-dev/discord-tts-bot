@@ -17,16 +17,24 @@ class PiperProvider extends AbstractProvider {
   createPayload(sentence, extras) {
     return new Promise(async (resolve, reject) => {
       try {
-        // Validar parámetros
+        // Parse voice value which contains full model name like 'es_MX-ald-medium'
+        const voiceValue = extras.voice || 'es_MX-ald-medium';
+        const voiceParts = voiceValue.split('-');
+        
+        // Extract language (first two parts like es_MX or en_US)
+        const language = voiceParts.length >= 2 ? `${voiceParts[0]}-${voiceParts[1]}` : 'es_MX';
+        // Extract voice (remaining parts, e.g., 'ald-medium' or just 'mls')
+        const voice = voiceParts.length > 2 ? voiceParts.slice(2).join('-') : (voiceParts.length > 1 ? voiceParts[1] : 'ald-medium');
+        
         const params = {
           text: sentence,
-          language: extras.language || 'es_MX',
-          voice: extras.voice || 'ald',
+          language: language,
+          voice: voice,
           speed: extras.speed || 'normal'
         };
 
         // Hacer petición al servicio Piper
-        const response = await axios.get(`${this.piperServiceUrl}/synthesize`, {
+        const response = await axios.post(`${this.piperServiceUrl}/synthesize`, null, {
           params,
           responseType: 'arraybuffer',
           timeout: 30000 // 30 segundos timeout
