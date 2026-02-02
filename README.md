@@ -1,3 +1,5 @@
+# Discord TTS Bot (Devidence Fork)
+
 ![banner](https://i.imgur.com/HT7Wmv1.jpg)
 
 [![discord](https://img.shields.io/discord/730998659008823296.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/mhj3Zsv)
@@ -6,7 +8,19 @@
 [![docker-image-size](https://img.shields.io/docker/image-size/moonstarx/discord-tts-bot?logo=docker)](https://hub.docker.com/repository/docker/moonstarx/discord-tts-bot)
 [![docker-pulls](https://img.shields.io/docker/pulls/moonstarx/discord-tts-bot?logo=docker)](https://hub.docker.com/repository/docker/moonstarx/discord-tts-bot)
 
-# Discord TTS Bot
+This is a **modified fork** of the original [discord-tts-bot](https://github.com/moonstar-x/discord-tts-bot) by moonstar-x.
+
+### 🚀 Key Improvements in this Fork
+This version has been modernized and optimized by **[devidence-dev](https://github.com/devidence-dev)**:
+
+*   **⚡ Bun Runtime**: Migrated the entire codebase to run on [Bun](https://bun.sh/) instead of Node.js for significantly faster startup and performance.
+*   **🐳 Optimized Docker Image**:
+    *   Reduced image size significantly (from **~1.3GB** to **~740MB**).
+    *   Uses **multi-stage builds** and **static ffmpeg binaries** to avoid heavy system dependencies.
+    *   Secure non-root execution guidelines.
+*   **📦 Modernized Dependencies**: Updated **all** project dependencies to their latest versions (including `level`, `redis`, `axios`, etc.) and removed legacy bloat.
+
+---
 
 This is a simple TTS Bot that uses the Google Translate TTS API. With this bot you can send Text-to-Speech messages in multiple languages using Google Translate or other TTS engines.
 
@@ -17,7 +31,7 @@ For more information, visit the bot's [official page](https://docs.moonstar-x.de
 To self-host this bot you'll need the following:
 
 * [git](https://git-scm.com/)
-* [node.js](https://nodejs.org/en/) (Version 16.6.0 or higher)
+* [Bun](https://bun.sh/) (v1.0.0 or higher)
 * ffmpeg
 
 **ffmpeg** should be installed by default on Linux and MacOS, in case it isn't, install it with your package manager. For Windows users, head over to [ffmpeg's official website](https://www.ffmpeg.org/download.html#build-windows) to download the binary which will need to be added to your **\$PATH**. If you don't know how to add folders to your **\$PATH**, check out this [guide](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/).
@@ -25,7 +39,7 @@ To self-host this bot you'll need the following:
 You may also try installing it with:
 
 ```text
-npm install ffmpeg-static
+bun add ffmpeg-static
 ```
 
 ## Installation
@@ -39,31 +53,31 @@ git clone https://github.com/moonstar-x/discord-tts-bot.git
 Install the dependencies with:
 
 ```text
-npm ci --only=prod
+bun install --production
 ```
 
 Or, if you want to also install the `devDependencies`:
 
 ```text
-npm install
+bun install
 ```
 
 After you have [configured](#configuration) the bot, you should deploy the slash commands by running:
 
 ```text
-npm run deploy
+bun run deploy
 ```
 
 Then, you can run your bot with:
 
 ```text
-npm start
+bun run start
 ```
 
 In case your bot is in a lot of servers (more than 2000), you should shard your bot. You can start a sharded client with:
 
 ```text
-npm run start-sharded
+bun run start-sharded
 ```
 
 ## Updating
@@ -77,13 +91,13 @@ git pull origin master
 And re-install the dependencies:
 
 ```text
-rm -rf node_modules && npm install
+rm -rf node_modules && bun install
 ```
 
 Once this is done, you should re-deploy the commands:
 
 ```text
-npm run deploy
+bun run deploy
 ```
 
 And you're ready to go. Make sure you check the README everytime you wish to update in case there are breaking changes
@@ -148,6 +162,8 @@ This table contains all the configuration settings you may specify with both env
 
 ## Running on Docker
 
+The Docker image has been optimized using multi-stage builds and static ffmpeg binaries, ensuring a lightweight and efficient container.
+
 Before you run this image, you should deploy your commands, you can do so by running:
 
 ```text
@@ -181,8 +197,8 @@ This will set up the proper node environment for the bot.
 Then, after you have [configured](#configuration) your bot, you should deploy your commands and start the bot with:
 
 ```text
-npm run deploy
-npm start
+bun run deploy
+bun start
 ```
 
 Make sure to have `enable_keep_alive` set to `true` and use UptimeRobot to poll the address that shows up for your repl to make sure it stays on 24/7.

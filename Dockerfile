@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /opt/app
 
-COPY package*.json bunfig.toml* ./
+COPY package.json bun.lock* bunfig.toml* ./
 
 RUN bun install --production
 
@@ -24,11 +24,11 @@ ARG VERSION
 
 LABEL org.opencontainers.image.created=$DATE_CREATED
 LABEL org.opencontainers.image.version=$VERSION
-LABEL org.opencontainers.image.authors="moonstar-x"
-LABEL org.opencontainers.image.vendor="moonstar-x"
-LABEL org.opencontainers.image.title="Discord TTS Bot"
-LABEL org.opencontainers.image.description="A Text-to-Speech bot for Discord."
-LABEL org.opencontainers.image.source="https://github.com/moonstar-x/discord-tts-bot"
+LABEL org.opencontainers.image.authors="devidence-dev"
+LABEL org.opencontainers.image.vendor="devidence-dev"
+LABEL org.opencontainers.image.title="Discord TTS Bot (Bun Optimized)"
+LABEL org.opencontainers.image.description="A Text-to-Speech bot for Discord. Forked and optimized with Bun."
+LABEL org.opencontainers.image.source="https://github.com/devidence-dev/discord-tts-bot"
 
 # Usar binarios estáticos de ffmpeg ahorra mucho espacio al evitar dependencias de X11 y librerías compartidas
 COPY --from=mwader/static-ffmpeg:7.1 /ffmpeg /usr/local/bin/
