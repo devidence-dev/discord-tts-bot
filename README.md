@@ -15,9 +15,9 @@ This version has been modernized and optimized by **[devidence-dev](https://gith
 
 *   **⚡ Bun Runtime**: Migrated the entire codebase to run on [Bun](https://bun.sh/) instead of Node.js for significantly faster startup and performance.
 *   **🐳 Optimized Docker Image**:
-    *   Reduced image size significantly (from **~1.3GB** to **~740MB**).
-    *   Uses **multi-stage builds** and **static ffmpeg binaries** to avoid heavy system dependencies.
-    *   Secure non-root execution guidelines.
+    *   **Distroless Runtime**: Uses `gcr.io/distroless/cc-debian12` for the final stage, reducing the attack surface by removing the shell and OS tools.
+    *   **Ultra-lightweight**: Image size reduced to **~660MB** (vs original ~1.3GB).
+    *   Uses **static ffmpeg binaries** to avoid heavy system dependencies.
 *   **📦 Modernized Dependencies**: Updated **all** project dependencies to their latest versions (including `level`, `redis`, `axios`, etc.) and removed legacy bloat.
 
 ---
@@ -162,7 +162,8 @@ This table contains all the configuration settings you may specify with both env
 
 ## Running on Docker
 
-The Docker image has been optimized using multi-stage builds and static ffmpeg binaries, ensuring a lightweight and efficient container.
+The Docker image has been optimized using multi-stage builds, static ffmpeg binaries, and a **Distroless** runtime. This ensures a lightweight and highly secure container.
+> **Note**: Because the image is Distroless, it does not contain a shell (`/bin/sh` or `/bin/bash`). You cannot use `docker exec -it <container> bash` to debug. Reliance on logs (`docker logs`) is required.
 
 Before you run this image, you should deploy your commands, you can do so by running:
 
