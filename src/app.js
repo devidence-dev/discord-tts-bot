@@ -118,7 +118,7 @@ const createProvider = (type) => {
   }
 };
 
-client.once('ready', async () => {
+client.once('clientReady', async () => {
   await client.setDataProvider(createProvider(config.get('PROVIDER_TYPE')));
   await client.initializeDependencies();
   await client.localizer.init();

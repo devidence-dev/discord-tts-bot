@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM oven/bun:1.3.8-debian AS builder
+FROM oven/bun:1.3.9-debian AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
