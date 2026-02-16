@@ -1,19 +1,24 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { PermissionsBitField, SlashCommandBuilder } = require('discord.js');
 const logger = require('@greencoast/logger');
 const AmazonProvider = require('../../../classes/tts/providers/AmazonProvider');
 const languageData = require('../../../../provider-data/ttstool_amazon_languages.json');
 
-class AmazonSetDefaultSettingsCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class AmazonSetDefaultSettingsCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'amazon_set_default',
       description: 'Sets the settings to be used by the say and amazon_say commands by default.',
-      emoji: ':pencil2:',
-      group: 'amazon-tts',
-      guildOnly: true,
-      userPermissions: [PermissionsBitField.Flags.ManageGuild],
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly', 'ManageGuild']
+    });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
         .addSubcommand((input) => {
           return input
             .setName('language')
@@ -72,7 +77,7 @@ class AmazonSetDefaultSettingsCommand extends SlashCommand {
                 .setChoices(...AmazonProvider.getSupportedPitchChoices());
             });
         })
-    });
+    );
   }
 
   async handleLanguage(interaction, localizer) {
@@ -85,7 +90,7 @@ class AmazonSetDefaultSettingsCommand extends SlashCommand {
 
     const [defaultVoice] = languageInfo.voices;
 
-    await this.client.ttsSettings.set(interaction.guild, {
+    await this.container.client.ttsSettings.set(interaction.guild, {
       [AmazonProvider.NAME]: {
         language,
         voice: defaultVoice.id
@@ -99,7 +104,7 @@ class AmazonSetDefaultSettingsCommand extends SlashCommand {
   async handleVoice(interaction, localizer) {
     const voice = interaction.options.getString('value').toLowerCase();
 
-    const settings = await this.client.ttsSettings.getCurrentForGuild(interaction.guild);
+    const settings = await this.container.client.ttsSettings.getCurrentForGuild(interaction.guild);
     const { language } = settings[AmazonProvider.NAME];
     const languageInfo = languageData[language];
 
@@ -113,7 +118,7 @@ class AmazonSetDefaultSettingsCommand extends SlashCommand {
       return interaction.reply({ content: localizer.t('command.amazon.settings.default.voice.unsupported', { voice }) });
     }
 
-    await this.client.ttsSettings.set(interaction.guild, {
+    await this.container.client.ttsSettings.set(interaction.guild, {
       [AmazonProvider.NAME]: {
         language,
         voice: voiceInfo.id
@@ -127,7 +132,7 @@ class AmazonSetDefaultSettingsCommand extends SlashCommand {
   async handleVolume(interaction, localizer) {
     const volume = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.guild, { [AmazonProvider.NAME]: { volume } });
+    await this.container.client.ttsSettings.set(interaction.guild, { [AmazonProvider.NAME]: { volume } });
 
     logger.info(`${interaction.guild.name} has changed its default amazon volume to ${volume}.`);
     return interaction.reply({ content: localizer.t('command.amazon.settings.default.volume.success', { volume }) });
@@ -136,7 +141,7 @@ class AmazonSetDefaultSettingsCommand extends SlashCommand {
   async handleRate(interaction, localizer) {
     const rate = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.guild, { [AmazonProvider.NAME]: { rate } });
+    await this.container.client.ttsSettings.set(interaction.guild, { [AmazonProvider.NAME]: { rate } });
 
     logger.info(`${interaction.guild.name} has changed its default amazon rate to ${rate}.`);
     return interaction.reply({ content: localizer.t('command.amazon.settings.default.rate.success', { rate }) });
@@ -145,14 +150,14 @@ class AmazonSetDefaultSettingsCommand extends SlashCommand {
   async handlePitch(interaction, localizer) {
     const pitch = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.guild, { [AmazonProvider.NAME]: { pitch } });
+    await this.container.client.ttsSettings.set(interaction.guild, { [AmazonProvider.NAME]: { pitch } });
 
     logger.info(`${interaction.guild.name} has changed its default amazon pitch to ${pitch}.`);
     return interaction.reply({ content: localizer.t('command.amazon.settings.default.pitch.success', { pitch }) });
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
     const subCommand = interaction.options.getSubcommand();
 
     switch (subCommand) {
@@ -172,4 +177,4 @@ class AmazonSetDefaultSettingsCommand extends SlashCommand {
   }
 }
 
-module.exports = AmazonSetDefaultSettingsCommand;
+module.exports = { AmazonSetDefaultSettingsCommand };

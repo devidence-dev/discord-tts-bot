@@ -1,16 +1,15 @@
-const LangsBaseCommand = require('../../base/LangsBaseCommand');
+const LangsBaseCommand = require('../../../classes/base/LangsBaseCommand');
 const { EmbedBuilder } = require('discord.js');
 const { MESSAGE_EMBED } = require('../../../common/constants');
 const { splitContentForEmbedFields } = require('../../../utils/embed');
 const languageData = require('../../../../provider-data/ttstool_microsoft_languages.json');
 
 class MicrosoftLangsCommand extends LangsBaseCommand {
-  constructor(client) {
-    super(client, {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'ms_langs',
-      description: 'Display a list of the languages supported by the Microsoft provider.',
-      emoji: ':page_facing_up:',
-      group: 'ms-tts'
+      description: 'Display a list of the languages supported by the Microsoft provider.'
     });
   }
 
@@ -27,14 +26,14 @@ class MicrosoftLangsCommand extends LangsBaseCommand {
       return `${cur.emoji} ${cur.name} - '**/ms_set_my language ${key}**'\n`;
     });
     const splitContent = splitContentForEmbedFields(content);
-    
+
     const fields = splitContent.map((field, index) => ({
       name: localizer.t('command.microsoft.langs.embed.page', { number: index + 1 }),
       value: field
     }));
-    
+
     embed.addFields(fields);
-    
+
     return embed;
   }
 
@@ -45,4 +44,4 @@ class MicrosoftLangsCommand extends LangsBaseCommand {
   }
 }
 
-module.exports = MicrosoftLangsCommand;
+module.exports = { MicrosoftLangsCommand };

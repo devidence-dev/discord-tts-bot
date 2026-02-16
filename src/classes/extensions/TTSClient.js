@@ -1,14 +1,19 @@
+const path = require('path');
 const { Collection } = require('discord.js');
-const { ExtendedClient } = require('@greencoast/discord.js-extended');
+const { SapphireClient, container } = require('@sapphire/framework');
 const ProviderManager = require('../tts/providers/ProviderManager');
 const TTSPlayer = require('../tts/TTSPlayer');
 const CachedTTSSettings = require('../tts/CachedTTSSettings');
 const TTSChannelHandler = require('../tts/TTSChannelHandler');
 const Scheduler = require('../Scheduler');
 
-class TTSClient extends ExtendedClient {
-  constructor(options) {
-    super(options);
+class TTSClient extends SapphireClient {
+  constructor(options = {}) {
+    super({
+      baseUserDirectory: path.join(__dirname, '../../'),
+      loadMessageCommandListeners: false,
+      ...options
+    });
 
     this.ttsPlayers = new Collection();
     this.disconnectSchedulers = new Collection();
@@ -23,7 +28,7 @@ class TTSClient extends ExtendedClient {
   }
 
   async initializeDependenciesForGuild(guild) {
-    const timeout = await this.dataProvider.get(guild, 'disconnectTimeout', this.config.get('DEFAULT_DISCONNECT_TIMEOUT') * 60 * 1000);
+    const timeout = await this.dataProvider.get(guild, 'disconnectTimeout', container.config.get('DEFAULT_DISCONNECT_TIMEOUT') * 60 * 1000);
     const scheduler = new Scheduler(this, guild, timeout);
 
     this.disconnectSchedulers.set(guild.id, scheduler);

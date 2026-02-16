@@ -1,18 +1,20 @@
 const path = require('path');
-const { ConfigProvider } = require('@greencoast/discord.js-extended');
+const { container } = require('@sapphire/framework');
+const { GatewayIntentBits } = require('discord.js');
 const { RedisDataProvider } = require('@greencoast/djs-extended-data-provider-redis');
 const { LevelDataProvider } = require('@greencoast/djs-extended-data-provider-level');
 const TTSClient = require('./classes/extensions/TTSClient');
+const ConfigService = require('./services/ConfigService');
+const LocalizerService = require('./services/LocalizerService');
+const PresenceService = require('./services/PresenceService');
 const { locales } = require('./locales');
-const { keepAlive } = require('./utils/keep-alive');
 const { DISCONNECT_TIMEOUT, WEBSITE_URL } = require('./common/constants');
-const { GatewayIntentBits } = require('discord.js');
 
 const pkg = require('../package.json');
 
 const SUPPORTED_PROVIDERS = ['level', 'redis'];
 
-const config = new ConfigProvider({
+const config = new ConfigService({
   configPath: path.join(__dirname, '../config/settings.json'),
   env: process.env,
   default: {
@@ -60,54 +62,31 @@ const config = new ConfigProvider({
   }
 });
 
+container.config = config;
+
 const client = new TTSClient({
-  config,
-  debug: process.argv.includes('--debug'),
-  errorOwnerReporting: config.get('OWNER_REPORTING'),
-  owner: config.get('OWNER_ID'),
-  prefix: config.get('PREFIX'),
-  presence: {
-    refreshInterval: config.get('PRESENCE_REFRESH_INTERVAL'),
-    templates: [
-      '{num_guilds} servers!',
-      '/help for help.',
-      '{num_members} users!',
-      'up for {uptime}.',
-      `current version: ${pkg.version}`,
-      '{num_commands} commands available.',
-      `visit ${WEBSITE_URL}`
-    ]
-  },
-  testingGuildID: config.get('TESTING_GUILD_ID'),
-  localizer: {
-    defaultLocale: 'en',
-    localeStrings: locales
-  },
   intents: [GatewayIntentBits.GuildMessages, GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.MessageContent]
 });
 
-client
-  .registerDefaultEvents()
-  .registerExtraDefaultEvents();
+container.localizer = new LocalizerService(client, {
+  defaultLocale: 'en',
+  localeStrings: locales
+});
 
-client.registry
-  .registerGroups([
-    ['all-tts', 'All TTS Commands'],
-    ['amazon-tts', 'Amazon TTS Commands'],
-    ['config', 'Configuration Commands'],
-    ['google-tts', 'Google TTS Commands'],
-    ['other-tts', 'Other TTS Commands'],
-    ['misc', 'Miscellaneous Commands'],
-    ['ms-tts', 'Microsoft TTS Commands'],
-    ['piper-tts', 'Piper TTS Commands']
-  ])
-  .registerCommandsIn(path.join(__dirname, './commands/main'));
+container.presence = new PresenceService(client, {
+  refreshInterval: config.get('PRESENCE_REFRESH_INTERVAL'),
+  templates: [
+    '{num_guilds} servers!',
+    '/help for help.',
+    '{num_members} users!',
+    'up for {uptime}.',
+    `current version: ${pkg.version}`,
+    '{num_commands} commands available.',
+    `visit ${WEBSITE_URL}`
+  ]
+});
 
-if (config.get('ENABLE_TTS_CHANNELS')) {
-  client.registry.registerCommandsIn(path.join(__dirname, './commands/optional/channel-tts'));
-}
-
-const createProvider = (type) => {
+container.createProvider = (type) => {
   switch (type) {
     case 'level':
       return new LevelDataProvider(client, path.join(__dirname, '../data'));
@@ -117,52 +96,5 @@ const createProvider = (type) => {
       throw new TypeError(`${type} is not a valid data provider, it must be one of ${SUPPORTED_PROVIDERS.join(', ')}`);
   }
 };
-
-client.once('clientReady', async () => {
-  await client.setDataProvider(createProvider(config.get('PROVIDER_TYPE')));
-  await client.initializeDependencies();
-  await client.localizer.init();
-
-  if (config.get('TESTING_GUILD_ID')) {
-    client.deployer.rest.setToken(config.get('TOKEN'));
-    await client.deployer.deployToTestingGuild();
-  }
-
-  if (config.get('ENABLE_TTS_CHANNELS')) {
-    client.ttsChannelHandler.initialize();
-  }
-
-  if (config.get('ENABLE_KEEP_ALIVE')) {
-    keepAlive({ port: process.env.PORT || 3000 });
-  }
-
-  client.on('guildCreate', async (guild) => {
-    await client.initializeDependenciesForGuild(guild);
-  });
-
-  client.on('guildDelete', async (guild) => {
-    await client.dataProvider.clear(guild);
-    client.deleteDependenciesForGuild(guild);
-  });
-
-  // This will be removed in a future update.
-  client.on('messageCreate', (message) => {
-    if (message.author.bot || !message.guild || !message.content.startsWith(client.prefix)) {
-      return;
-    }
-
-    const args = message.content.slice(client.prefix.length).trim().split(/ +/);
-    const commandName = args.shift()?.toLowerCase();
-    const command = client.registry.resolveCommand(commandName);
-
-    if (command) {
-      const localizer = client.localizer.getLocalizer(message.guild);
-      return message.reply(localizer.t('app.message.deprecated', { commandName }))
-        .catch((error) => {
-          client.emit('error', error);
-        });
-    }
-  });
-});
 
 client.login(config.get('TOKEN'));

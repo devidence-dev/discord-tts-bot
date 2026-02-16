@@ -1,24 +1,29 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageFlags } = require('discord.js');
 const logger = require('@greencoast/logger');
 
-class StopCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class StopCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'stop',
-      aliases: ['leave'],
       description: 'Stop the TTS bot and leave the channel.',
-      emoji: ':x:',
-      group: 'all-tts',
-      guildOnly: true,
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly']
     });
   }
 
-  run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
-    const ttsPlayer = this.client.getTTSPlayer(interaction.guild);
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
+    );
+  }
+
+  chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
+    const ttsPlayer = this.container.client.getTTSPlayer(interaction.guild);
     const connection = ttsPlayer.voice.getConnection();
 
     const { members: { me: { voice: myVoice } }, name: guildName } = interaction.guild;
@@ -26,13 +31,11 @@ class StopCommand extends SlashCommand {
     const { channel: memberChannel } = interaction.member.voice;
 
     if (!connection) {
-      return interaction.reply({ content: localizer.t('command.stop.no_connection'), flags: MessageFlags.Ephemeral }
-      );
+      return interaction.reply({ content: localizer.t('command.stop.no_connection'), flags: MessageFlags.Ephemeral });
     }
 
     if (!memberChannel || myChannel !== memberChannel) {
-      return interaction.reply({ content: localizer.t('command.stop.different_channel'), flags: MessageFlags.Ephemeral }
-      );
+      return interaction.reply({ content: localizer.t('command.stop.different_channel'), flags: MessageFlags.Ephemeral });
     }
 
     ttsPlayer.stop();
@@ -41,4 +44,4 @@ class StopCommand extends SlashCommand {
   }
 }
 
-module.exports = StopCommand;
+module.exports = { StopCommand };

@@ -1,19 +1,24 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { PermissionsBitField, SlashCommandBuilder } = require('discord.js');
 const logger = require('@greencoast/logger');
 const GoogleProvider = require('../../../classes/tts/providers/GoogleProvider');
 const languages = require('../../../../provider-data/google_languages.json');
 
-class GoogleSetDefaultSettingsCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class GoogleSetDefaultSettingsCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'google_set_default',
       description: 'Sets the settings to be used by the say and google_say command by default.',
-      emoji: ':pencil2:',
-      group: 'google-tts',
-      guildOnly: true,
-      userPermissions: [PermissionsBitField.Flags.ManageGuild],
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly', 'ManageGuild']
+    });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
         .addSubcommand((input) => {
           return input
             .setName('language')
@@ -37,7 +42,7 @@ class GoogleSetDefaultSettingsCommand extends SlashCommand {
                 .setChoices(...GoogleProvider.getSupportedSpeedChoices());
             });
         })
-    });
+    );
   }
 
   async handleLanguage(interaction, localizer) {
@@ -48,7 +53,7 @@ class GoogleSetDefaultSettingsCommand extends SlashCommand {
       return interaction.reply({ content: localizer.t('command.google.settings.default.language.invalid') });
     }
 
-    await this.client.ttsSettings.set(interaction.guild, { [GoogleProvider.NAME]: { language } });
+    await this.container.client.ttsSettings.set(interaction.guild, { [GoogleProvider.NAME]: { language } });
 
     logger.info(`${interaction.guild.name} has changed its default google language to ${language}.`);
     return interaction.reply({ content: localizer.t('command.google.settings.default.language.success', { language: languageInfo.name }) });
@@ -57,14 +62,14 @@ class GoogleSetDefaultSettingsCommand extends SlashCommand {
   async handleSpeed(interaction, localizer) {
     const speed = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.guild, { [GoogleProvider.NAME]: { speed } });
+    await this.container.client.ttsSettings.set(interaction.guild, { [GoogleProvider.NAME]: { speed } });
 
     logger.info(`${interaction.guild.name} has changed its default google google speed to ${speed}.`);
     return interaction.reply({ content: localizer.t('command.google.settings.default.speed.success', { speed }) });
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
     const subCommand = interaction.options.getSubcommand();
 
     switch (subCommand) {
@@ -78,4 +83,4 @@ class GoogleSetDefaultSettingsCommand extends SlashCommand {
   }
 }
 
-module.exports = GoogleSetDefaultSettingsCommand;
+module.exports = { GoogleSetDefaultSettingsCommand };

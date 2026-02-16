@@ -1,32 +1,47 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const { MESSAGE_EMBED, WEBSITE_URL } = require('../../../common/constants');
 
-class HelpCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class HelpCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'help',
       description: 'Display a help message with all the available commands.',
-      emoji: ':question:',
-      group: 'misc',
-      guildOnly: true,
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly']
     });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
+    );
   }
 
   prepareFields() {
-    return this.client.registry.groups.map((group) => {
-      const listOfCommands = group.commands.reduce((text, command) => {
-        return text.concat(`${command.emoji} **/${command.name}** - ${command.description}\n`);
+    const commandStore = this.container.client.stores.get('commands');
+    const grouped = new Map();
+
+    for (const command of commandStore.values()) {
+      const category = command.category || 'misc';
+      if (!grouped.has(category)) grouped.set(category, []);
+      grouped.get(category).push(command);
+    }
+
+    return [...grouped.entries()].map(([categoryName, commands]) => {
+      const listOfCommands = commands.reduce((text, command) => {
+        return text.concat(`**/${command.name}** - ${command.description}\n`);
       }, '');
 
-      return { title: group.name, text: listOfCommands };
+      return { title: categoryName, text: listOfCommands };
     });
   }
 
-  run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
     const fields = this.prepareFields();
     const embed = new EmbedBuilder()
       .setTitle(localizer.t('command.help.embed.title'))
@@ -58,4 +73,4 @@ class HelpCommand extends SlashCommand {
   }
 }
 
-module.exports = HelpCommand;
+module.exports = { HelpCommand };

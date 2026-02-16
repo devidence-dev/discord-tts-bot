@@ -1,13 +1,12 @@
-const SayBaseCommand = require('../../base/SayBaseCommand');
+const SayBaseCommand = require('../../../classes/base/SayBaseCommand');
 const AeiouProvider = require('../../../classes/tts/providers/AeiouProvider');
 
 class SayAeiouCommand extends SayBaseCommand {
-  constructor(client) {
-    super(client, {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'aeiou_say',
-      description: 'Send an aeiou (sounds like Stephen Hawking) TTS message in your voice channel.',
-      emoji: ':robot:',
-      group: 'other-tts'
+      description: 'Send an aeiou (sounds like Stephen Hawking) TTS message in your voice channel.'
     });
   }
 
@@ -16,4 +15,4 @@ class SayAeiouCommand extends SayBaseCommand {
   }
 }
 
-module.exports = SayAeiouCommand;
+module.exports = { SayAeiouCommand };

@@ -1,13 +1,12 @@
-const SayBaseCommand = require('../../base/SayBaseCommand');
+const SayBaseCommand = require('../../../classes/base/SayBaseCommand');
 const GoogleProvider = require('../../../classes/tts/providers/GoogleProvider');
 
 class GoogleSayCommand extends SayBaseCommand {
-  constructor(client) {
-    super(client, {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'google_say',
-      description: 'Send a Google Translate TTS message with multi-language support in your voice channel.',
-      emoji: ':speaking_head:',
-      group: 'google-tts'
+      description: 'Send a Google Translate TTS message with multi-language support in your voice channel.'
     });
   }
 
@@ -16,4 +15,4 @@ class GoogleSayCommand extends SayBaseCommand {
   }
 }
 
-module.exports = GoogleSayCommand;
+module.exports = { GoogleSayCommand };

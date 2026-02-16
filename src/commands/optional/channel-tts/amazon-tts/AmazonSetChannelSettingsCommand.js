@@ -1,19 +1,25 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { PermissionsBitField, SlashCommandBuilder } = require('discord.js');
 const logger = require('@greencoast/logger');
 const AmazonProvider = require('../../../../classes/tts/providers/AmazonProvider');
 const languageData = require('../../../../../provider-data/ttstool_amazon_languages.json');
 
-class AmazonSetChannelSettingsCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class AmazonSetChannelSettingsCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'amazon_set_channel',
       description: 'Sets the settings to be used with message-only based TTS from Amazon.',
-      emoji: ':pencil2:',
-      group: 'amazon-tts',
-      guildOnly: true,
-      userPermissions: [PermissionsBitField.Flags.ManageChannels],
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly', 'ManageChannels']
+    });
+  }
+
+  registerApplicationCommands(registry) {
+    if (!this.container.config.get('ENABLE_TTS_CHANNELS')) return;
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
         .addSubcommand((input) => {
           return input
             .setName('language')
@@ -72,7 +78,7 @@ class AmazonSetChannelSettingsCommand extends SlashCommand {
                 .setChoices(...AmazonProvider.getSupportedPitchChoices());
             });
         })
-    });
+    );
   }
 
   async handleLanguage(interaction, localizer) {
@@ -85,7 +91,7 @@ class AmazonSetChannelSettingsCommand extends SlashCommand {
 
     const [defaultVoice] = languageInfo.voices;
 
-    await this.client.ttsSettings.set(interaction.channel, {
+    await this.container.client.ttsSettings.set(interaction.channel, {
       [AmazonProvider.NAME]: {
         language,
         voice: defaultVoice.id
@@ -99,7 +105,7 @@ class AmazonSetChannelSettingsCommand extends SlashCommand {
   async handleVoice(interaction, localizer) {
     const voice = interaction.options.getString('value').toLowerCase();
 
-    const settings = await this.client.ttsSettings.getCurrentForChannel(interaction.channel);
+    const settings = await this.container.client.ttsSettings.getCurrentForChannel(interaction.channel);
     const { language } = settings[AmazonProvider.NAME];
     const languageInfo = languageData[language];
 
@@ -109,7 +115,7 @@ class AmazonSetChannelSettingsCommand extends SlashCommand {
       return interaction.reply({ content: localizer.t('channel_commands.amazon.settings.voice.unsupported', { voice }) });
     }
 
-    await this.client.ttsSettings.set(interaction.channel, {
+    await this.container.client.ttsSettings.set(interaction.channel, {
       [AmazonProvider.NAME]: {
         language,
         voice: voiceInfo.id
@@ -123,7 +129,7 @@ class AmazonSetChannelSettingsCommand extends SlashCommand {
   async handleVolume(interaction, localizer) {
     const volume = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.channel, { [AmazonProvider.NAME]: { volume } });
+    await this.container.client.ttsSettings.set(interaction.channel, { [AmazonProvider.NAME]: { volume } });
 
     logger.info(`${interaction.guild.name} has changed the amazon volume for the channel ${interaction.channel.name} to ${volume}.`);
     return interaction.reply({ content: localizer.t('channel_commands.amazon.settings.volume.success', { volume }) });
@@ -132,7 +138,7 @@ class AmazonSetChannelSettingsCommand extends SlashCommand {
   async handleRate(interaction, localizer) {
     const rate = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.channel, { [AmazonProvider.NAME]: { rate } });
+    await this.container.client.ttsSettings.set(interaction.channel, { [AmazonProvider.NAME]: { rate } });
 
     logger.info(`${interaction.guild.name} has changed the amazon rate for the channel ${interaction.channel.name} to ${rate}.`);
     return interaction.reply({ content: localizer.t('channel_commands.amazon.settings.rate.success', { rate }) });
@@ -141,14 +147,14 @@ class AmazonSetChannelSettingsCommand extends SlashCommand {
   async handlePitch(interaction, localizer) {
     const pitch = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.channel, { [AmazonProvider.NAME]: { pitch } });
+    await this.container.client.ttsSettings.set(interaction.channel, { [AmazonProvider.NAME]: { pitch } });
 
     logger.info(`${interaction.guild.name} has changed the amazon pitch for the channel ${interaction.channel.name} to ${pitch}.`);
     return interaction.reply({ content: localizer.t('channel_commands.amazon.settings.pitch.success', { pitch }) });
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
     const subCommand = interaction.options.getSubcommand();
 
     switch (subCommand) {
@@ -168,4 +174,4 @@ class AmazonSetChannelSettingsCommand extends SlashCommand {
   }
 }
 
-module.exports = AmazonSetChannelSettingsCommand;
+module.exports = { AmazonSetChannelSettingsCommand };

@@ -1,13 +1,12 @@
-const SayBaseCommand = require('../../base/SayBaseCommand');
+const SayBaseCommand = require('../../../classes/base/SayBaseCommand');
 const AmazonProvider = require('../../../classes/tts/providers/AmazonProvider');
 
 class AmazonSayCommand extends SayBaseCommand {
-  constructor(client) {
-    super(client, {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'amazon_say',
-      description: 'Send an Amazon (TTS Tool) message with multi-language support in your voice channel.',
-      emoji: ':speaking_head:',
-      group: 'amazon-tts'
+      description: 'Send an Amazon (TTS Tool) message with multi-language support in your voice channel.'
     });
   }
 
@@ -16,4 +15,4 @@ class AmazonSayCommand extends SayBaseCommand {
   }
 }
 
-module.exports = AmazonSayCommand;
+module.exports = { AmazonSayCommand };

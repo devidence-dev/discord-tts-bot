@@ -1,27 +1,31 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { Collection } = require('discord.js');
 
-class LangsBaseCommand extends SlashCommand {
-  constructor(client, options) {
-    super(client, {
-      name: options.name,
-      description: options.description,
-      emoji: options.emoji,
-      group: options.group,
-      guildOnly: true,
-      dataBuilder: new SlashCommandBuilder()
+class LangsBaseCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
+      preconditions: ['GuildOnly']
     });
 
     this.embeds = new Collection();
+  }
+
+  registerApplicationCommands(registry) {
+    const builder = new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description);
+
+    registry.registerChatInputCommand(builder);
   }
 
   createEmbed() {
     throw new Error('createEmbed() not implemented!');
   }
 
-  run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
     let embed;
 
     if (!this.embeds.has(localizer.locale)) {

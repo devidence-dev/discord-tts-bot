@@ -1,16 +1,22 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { SlashCommandBuilder } = require('discord.js');
 const PiperProvider = require('../../../classes/tts/providers/PiperProvider');
 
-class PiperSetMySettingsCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class PiperSetMySettingsCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'piper_set_my',
       description: 'Sets the settings to be used by the say and piper_say commands for yourself.',
-      emoji: ':speaking_head:',
-      group: 'piper-tts',
-      guildOnly: true,
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly']
+    });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
         .addStringOption((input) => {
           return input
             .setName('language')
@@ -47,24 +53,20 @@ class PiperSetMySettingsCommand extends SlashCommand {
               }))
             );
         })
-    });
+    );
   }
 
-  async run(interaction) {
+  async chatInputRun(interaction) {
     const language = interaction.options.getString('language');
     const voice = interaction.options.getString('voice');
     const speed = interaction.options.getString('speed');
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
 
     const settings = {};
     if (language) settings.language = language;
     if (voice) settings.voice = voice;
     if (speed) settings.speed = speed;
 
-    const provider = PiperProvider.NAME;
-    const userProvider = this.client.getProvider();
-
-    await userProvider.setUserProvider(interaction.user.id, provider, settings);
+    await this.container.client.ttsSettings.set(interaction.member, { [PiperProvider.NAME]: settings });
 
     return interaction.reply({
       content: `✅ Piper TTS settings updated: ${Object.entries(settings).map(([k, v]) => `**${k}**: ${v}`).join(', ')}`,
@@ -73,4 +75,4 @@ class PiperSetMySettingsCommand extends SlashCommand {
   }
 }
 
-module.exports = PiperSetMySettingsCommand;
+module.exports = { PiperSetMySettingsCommand };

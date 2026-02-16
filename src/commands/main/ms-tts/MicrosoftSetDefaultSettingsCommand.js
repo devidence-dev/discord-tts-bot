@@ -1,19 +1,24 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { PermissionsBitField, SlashCommandBuilder } = require('discord.js');
 const logger = require('@greencoast/logger');
 const MicrosoftProvider = require('../../../classes/tts/providers/MicrosoftProvider');
 const languageData = require('../../../../provider-data/ttstool_microsoft_languages.json');
 
-class MicrosoftSetDefaultSettingsCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class MicrosoftSetDefaultSettingsCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'ms_set_default',
       description: 'Sets the settings to be used by the say and ms_say commands by default.',
-      emoji: ':pencil2:',
-      group: 'ms-tts',
-      guildOnly: true,
-      userPermissions: [PermissionsBitField.Flags.ManageGuild],
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly', 'ManageGuild']
+    });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
         .addSubcommand((input) => {
           return input
             .setName('language')
@@ -72,7 +77,7 @@ class MicrosoftSetDefaultSettingsCommand extends SlashCommand {
                 .setChoices(...MicrosoftProvider.getSupportedPitchChoices());
             });
         })
-    });
+    );
   }
 
   async handleLanguage(interaction, localizer) {
@@ -85,7 +90,7 @@ class MicrosoftSetDefaultSettingsCommand extends SlashCommand {
 
     const [defaultVoice] = languageInfo.voices;
 
-    await this.client.ttsSettings.set(interaction.guild, {
+    await this.container.client.ttsSettings.set(interaction.guild, {
       [MicrosoftProvider.NAME]: {
         language,
         voice: defaultVoice.id
@@ -99,7 +104,7 @@ class MicrosoftSetDefaultSettingsCommand extends SlashCommand {
   async handleVoice(interaction, localizer) {
     const voice = interaction.options.getString('value').toLowerCase();
 
-    const settings = await this.client.ttsSettings.getCurrentForGuild(interaction.guild);
+    const settings = await this.container.client.ttsSettings.getCurrentForGuild(interaction.guild);
     const { language } = settings[MicrosoftProvider.NAME];
     const languageInfo = languageData[language];
 
@@ -113,7 +118,7 @@ class MicrosoftSetDefaultSettingsCommand extends SlashCommand {
       return interaction.reply({ content: localizer.t('command.microsoft.settings.default.voice.unsupported', { voice }) });
     }
 
-    await this.client.ttsSettings.set(interaction.guild, {
+    await this.container.client.ttsSettings.set(interaction.guild, {
       [MicrosoftProvider.NAME]: {
         language,
         voice: voiceInfo.id
@@ -127,7 +132,7 @@ class MicrosoftSetDefaultSettingsCommand extends SlashCommand {
   async handleVolume(interaction, localizer) {
     const volume = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.guild, { [MicrosoftProvider.NAME]: { volume } });
+    await this.container.client.ttsSettings.set(interaction.guild, { [MicrosoftProvider.NAME]: { volume } });
 
     logger.info(`${interaction.guild.name} has changed its default microsoft volume to ${volume}.`);
     return interaction.reply({ content: localizer.t('command.microsoft.settings.default.volume.success', { volume }) });
@@ -136,7 +141,7 @@ class MicrosoftSetDefaultSettingsCommand extends SlashCommand {
   async handleRate(interaction, localizer) {
     const rate = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.guild, { [MicrosoftProvider.NAME]: { rate } });
+    await this.container.client.ttsSettings.set(interaction.guild, { [MicrosoftProvider.NAME]: { rate } });
 
     logger.info(`${interaction.guild.name} has changed its default microsoft rate to ${rate}.`);
     return interaction.reply({ content: localizer.t('command.microsoft.settings.default.rate.success', { rate }) });
@@ -145,14 +150,14 @@ class MicrosoftSetDefaultSettingsCommand extends SlashCommand {
   async handlePitch(interaction, localizer) {
     const pitch = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.guild, { [MicrosoftProvider.NAME]: { pitch } });
+    await this.container.client.ttsSettings.set(interaction.guild, { [MicrosoftProvider.NAME]: { pitch } });
 
     logger.info(`${interaction.guild.name} has changed its default microsoft pitch to ${pitch}.`);
     return interaction.reply({ content: localizer.t('command.microsoft.settings.default.pitch.success', { pitch }) });
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
     const subCommand = interaction.options.getSubcommand();
 
     switch (subCommand) {
@@ -172,4 +177,4 @@ class MicrosoftSetDefaultSettingsCommand extends SlashCommand {
   }
 }
 
-module.exports = MicrosoftSetDefaultSettingsCommand;
+module.exports = { MicrosoftSetDefaultSettingsCommand };

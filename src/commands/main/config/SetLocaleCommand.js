@@ -1,19 +1,24 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
-const { PermissionsBitField, SlashCommandBuilder } = require('discord.js');
+const { Command } = require('@sapphire/framework');
+const { SlashCommandBuilder } = require('@discordjs/builders');
 const logger = require('@greencoast/logger');
 const { supported } = require('../../../locales');
 const { oldChoiceListToNew } = require('../../../utils/upgrade-utils');
 
-class SetLocaleCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class SetLocaleCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'set_locale',
       description: 'Sets locale to be used by the bot in this guild.',
-      emoji: ':earth_americas:',
-      group: 'config',
-      guildOnly: true,
-      userPermissions: [PermissionsBitField.Flags.ManageGuild],
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly', 'ManageGuild']
+    });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
         .addStringOption((input) => {
           return input
             .setName('locale')
@@ -21,11 +26,11 @@ class SetLocaleCommand extends SlashCommand {
             .setRequired(true)
             .addChoices(...oldChoiceListToNew(Object.keys(supported).map((key) => [supported[key], key])));
         })
-    });
+    );
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
     const locale = interaction.options.getString('locale');
     const localeFriendlyName = supported[locale];
 
@@ -36,4 +41,4 @@ class SetLocaleCommand extends SlashCommand {
   }
 }
 
-module.exports = SetLocaleCommand;
+module.exports = { SetLocaleCommand };

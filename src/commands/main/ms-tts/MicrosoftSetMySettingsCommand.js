@@ -1,19 +1,24 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageFlags } = require('discord.js');
+const { Command } = require('@sapphire/framework');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const logger = require('@greencoast/logger');
 const MicrosoftProvider = require('../../../classes/tts/providers/MicrosoftProvider');
 const languageData = require('../../../../provider-data/ttstool_microsoft_languages.json');
 
-class MicrosoftSetMySettingsCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class MicrosoftSetMySettingsCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'ms_set_my',
       description: 'Sets the settings to be used by the say and ms_say commands for yourself.',
-      emoji: ':pencil2:',
-      group: 'ms-tts',
-      guildOnly: true,
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly']
+    });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
         .addSubcommand((input) => {
           return input
             .setName('language')
@@ -72,7 +77,7 @@ class MicrosoftSetMySettingsCommand extends SlashCommand {
                 .setChoices(...MicrosoftProvider.getSupportedPitchChoices());
             });
         })
-    });
+    );
   }
 
   async handleLanguage(interaction, localizer) {
@@ -86,7 +91,7 @@ class MicrosoftSetMySettingsCommand extends SlashCommand {
 
     const [defaultVoice] = languageInfo.voices;
 
-    await this.client.ttsSettings.set(interaction.member, {
+    await this.container.client.ttsSettings.set(interaction.member, {
       [MicrosoftProvider.NAME]: {
         language,
         voice: defaultVoice.id
@@ -101,7 +106,7 @@ class MicrosoftSetMySettingsCommand extends SlashCommand {
   async handleVoice(interaction, localizer) {
     const voice = interaction.options.getString('value').toLowerCase();
 
-    const settings = await this.client.ttsSettings.getCurrent(interaction);
+    const settings = await this.container.client.ttsSettings.getCurrent(interaction);
     const { language } = settings[MicrosoftProvider.NAME];
     const languageInfo = languageData[language];
 
@@ -117,7 +122,7 @@ class MicrosoftSetMySettingsCommand extends SlashCommand {
       );
     }
 
-    await this.client.ttsSettings.set(interaction.member, {
+    await this.container.client.ttsSettings.set(interaction.member, {
       [MicrosoftProvider.NAME]: {
         language,
         voice: voiceInfo.id
@@ -132,7 +137,7 @@ class MicrosoftSetMySettingsCommand extends SlashCommand {
   async handleVolume(interaction, localizer) {
     const volume = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.member, { [MicrosoftProvider.NAME]: { volume } });
+    await this.container.client.ttsSettings.set(interaction.member, { [MicrosoftProvider.NAME]: { volume } });
 
     logger.info(`User ${interaction.member.displayName} in ${interaction.guild.name} has changed their microsoft volume to ${volume}.`);
     return interaction.reply({ content: localizer.t('command.microsoft.settings.my.volume.success', { volume }), flags: MessageFlags.Ephemeral }
@@ -142,7 +147,7 @@ class MicrosoftSetMySettingsCommand extends SlashCommand {
   async handleRate(interaction, localizer) {
     const rate = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.member, { [MicrosoftProvider.NAME]: { rate } });
+    await this.container.client.ttsSettings.set(interaction.member, { [MicrosoftProvider.NAME]: { rate } });
 
     logger.info(`User ${interaction.member.displayName} in ${interaction.guild.name} has changed their microsoft rate to ${rate}.`);
     return interaction.reply({ content: localizer.t('command.microsoft.settings.my.rate.success', { rate }), flags: MessageFlags.Ephemeral }
@@ -152,15 +157,15 @@ class MicrosoftSetMySettingsCommand extends SlashCommand {
   async handlePitch(interaction, localizer) {
     const pitch = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.member, { [MicrosoftProvider.NAME]: { pitch } });
+    await this.container.client.ttsSettings.set(interaction.member, { [MicrosoftProvider.NAME]: { pitch } });
 
     logger.info(`User ${interaction.member.displayName} in ${interaction.guild.name} has changed their microsoft pitch to ${pitch}.`);
     return interaction.reply({ content: localizer.t('command.microsoft.settings.my.pitch.success', { pitch }), flags: MessageFlags.Ephemeral }
     );
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
     const subCommand = interaction.options.getSubcommand();
 
     switch (subCommand) {
@@ -180,4 +185,4 @@ class MicrosoftSetMySettingsCommand extends SlashCommand {
   }
 }
 
-module.exports = MicrosoftSetMySettingsCommand;
+module.exports = { MicrosoftSetMySettingsCommand };

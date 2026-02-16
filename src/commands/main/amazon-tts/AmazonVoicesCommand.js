@@ -1,26 +1,31 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
+const { Command } = require('@sapphire/framework');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const AmazonProvider = require('../../../classes/tts/providers/AmazonProvider');
 const { MESSAGE_EMBED } = require('../../../common/constants');
 const languageData = require('../../../../provider-data/ttstool_amazon_languages.json');
 
-class AmazonVoicesCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class AmazonVoicesCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'amazon_voices',
       description: 'Display a list of the voices for any language supported by the Amazon provider.',
-      emoji: ':speaking_head:',
-      group: 'amazon-tts',
-      guildOnly: true,
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly']
+    });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
         .addStringOption((input) => {
           return input
             .setName('language')
             .setDescription('The language to check the voices for. Omit this to see the voices for your language.')
             .setRequired(false);
         })
-    });
+    );
   }
 
   createEmbed(localizer, language) {
@@ -47,8 +52,8 @@ class AmazonVoicesCommand extends SlashCommand {
     return interaction.reply({ embeds: [embed] });
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
     const language = interaction.options.getString('language');
 
     if (language) {
@@ -60,11 +65,11 @@ class AmazonVoicesCommand extends SlashCommand {
     }
 
 
-    const settings = await this.client.ttsSettings.getCurrent(interaction);
+    const settings = await this.container.client.ttsSettings.getCurrent(interaction);
     const { language: userLanguage } = settings[AmazonProvider.NAME];
 
     return this.sendAvailableVoices(interaction, localizer, userLanguage);
   }
 }
 
-module.exports = AmazonVoicesCommand;
+module.exports = { AmazonVoicesCommand };

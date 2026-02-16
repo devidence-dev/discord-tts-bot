@@ -1,19 +1,25 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { PermissionsBitField, SlashCommandBuilder } = require('discord.js');
 const logger = require('@greencoast/logger');
 const MicrosoftProvider = require('../../../../classes/tts/providers/MicrosoftProvider');
 const languageData = require('../../../../../provider-data/ttstool_microsoft_languages.json');
 
-class MicrosoftSetChannelSettingsCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class MicrosoftSetChannelSettingsCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'ms_set_channel',
       description: 'Sets the settings to be used with message-only based TTS from Microsoft.',
-      emoji: ':pencil2:',
-      group: 'ms-tts',
-      guildOnly: true,
-      userPermissions: [PermissionsBitField.Flags.ManageChannels],
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly', 'ManageChannels']
+    });
+  }
+
+  registerApplicationCommands(registry) {
+    if (!this.container.config.get('ENABLE_TTS_CHANNELS')) return;
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
         .addSubcommand((input) => {
           return input
             .setName('language')
@@ -72,7 +78,7 @@ class MicrosoftSetChannelSettingsCommand extends SlashCommand {
                 .setChoices(...MicrosoftProvider.getSupportedPitchChoices());
             });
         })
-    });
+    );
   }
 
   async handleLanguage(interaction, localizer) {
@@ -85,7 +91,7 @@ class MicrosoftSetChannelSettingsCommand extends SlashCommand {
 
     const [defaultVoice] = languageInfo.voices;
 
-    await this.client.ttsSettings.set(interaction.channel, {
+    await this.container.client.ttsSettings.set(interaction.channel, {
       [MicrosoftProvider.NAME]: {
         language,
         voice: defaultVoice.id
@@ -99,7 +105,7 @@ class MicrosoftSetChannelSettingsCommand extends SlashCommand {
   async handleVoice(interaction, localizer) {
     const voice = interaction.options.getString('value').toLowerCase();
 
-    const settings = await this.client.ttsSettings.getCurrentForChannel(interaction.channel);
+    const settings = await this.container.client.ttsSettings.getCurrentForChannel(interaction.channel);
     const { language } = settings[MicrosoftProvider.NAME];
     const languageInfo = languageData[language];
 
@@ -109,7 +115,7 @@ class MicrosoftSetChannelSettingsCommand extends SlashCommand {
       return interaction.reply({ content: localizer.t('channel_commands.microsoft.settings.voice.unsupported', { voice }) });
     }
 
-    await this.client.ttsSettings.set(interaction.channel, {
+    await this.container.client.ttsSettings.set(interaction.channel, {
       [MicrosoftProvider.NAME]: {
         language,
         voice: voiceInfo.id
@@ -123,7 +129,7 @@ class MicrosoftSetChannelSettingsCommand extends SlashCommand {
   async handleVolume(interaction, localizer) {
     const volume = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.channel, { [MicrosoftProvider.NAME]: { volume } });
+    await this.container.client.ttsSettings.set(interaction.channel, { [MicrosoftProvider.NAME]: { volume } });
 
     logger.info(`${interaction.guild.name} has changed the microsoft volume for the channel ${interaction.channel.name} to ${volume}.`);
     return interaction.reply({ content: localizer.t('channel_commands.microsoft.settings.volume.success', { volume }) });
@@ -132,7 +138,7 @@ class MicrosoftSetChannelSettingsCommand extends SlashCommand {
   async handleRate(interaction, localizer) {
     const rate = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.channel, { [MicrosoftProvider.NAME]: { rate } });
+    await this.container.client.ttsSettings.set(interaction.channel, { [MicrosoftProvider.NAME]: { rate } });
 
     logger.info(`${interaction.guild.name} has changed the microsoft rate for the channel ${interaction.channel.name} to ${rate}.`);
     return interaction.reply({ content: localizer.t('channel_commands.microsoft.settings.rate.success', { rate }) });
@@ -141,14 +147,14 @@ class MicrosoftSetChannelSettingsCommand extends SlashCommand {
   async handlePitch(interaction, localizer) {
     const pitch = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.channel, { [MicrosoftProvider.NAME]: { pitch } });
+    await this.container.client.ttsSettings.set(interaction.channel, { [MicrosoftProvider.NAME]: { pitch } });
 
     logger.info(`${interaction.guild.name} has changed the microsoft pitch for the channel ${interaction.channel.name} to ${pitch}.`);
     return interaction.reply({ content: localizer.t('channel_commands.microsoft.settings.pitch.success', { pitch }) });
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
     const subCommand = interaction.options.getSubcommand();
 
     switch (subCommand) {
@@ -168,4 +174,4 @@ class MicrosoftSetChannelSettingsCommand extends SlashCommand {
   }
 }
 
-module.exports = MicrosoftSetChannelSettingsCommand;
+module.exports = { MicrosoftSetChannelSettingsCommand };

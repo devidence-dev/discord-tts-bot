@@ -1,17 +1,22 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { PermissionsBitField, SlashCommandBuilder } = require('discord.js');
 const PiperProvider = require('../../../classes/tts/providers/PiperProvider');
 
-class PiperSetDefaultSettingsCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class PiperSetDefaultSettingsCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'piper_set_default',
       description: 'Sets the settings to be used by the say and piper_say commands by default.',
-      emoji: ':speaking_head:',
-      group: 'piper-tts',
-      guildOnly: true,
-      userPermissions: [PermissionsBitField.Flags.ManageGuild],
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly', 'ManageGuild']
+    });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
         .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild)
         .addStringOption((input) => {
           return input
@@ -49,24 +54,20 @@ class PiperSetDefaultSettingsCommand extends SlashCommand {
               }))
             );
         })
-    });
+    );
   }
 
-  async run(interaction) {
+  async chatInputRun(interaction) {
     const language = interaction.options.getString('language');
     const voice = interaction.options.getString('voice');
     const speed = interaction.options.getString('speed');
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
 
     const settings = {};
     if (language) settings.language = language;
     if (voice) settings.voice = voice;
     if (speed) settings.speed = speed;
 
-    const provider = PiperProvider.NAME;
-    const userProvider = this.client.getProvider();
-
-    await userProvider.setGuildProvider(interaction.guildId, provider, settings);
+    await this.container.client.ttsSettings.set(interaction.guild, { [PiperProvider.NAME]: settings });
 
     return interaction.reply({
       content: `✅ Default Piper TTS settings updated: ${Object.entries(settings).map(([k, v]) => `**${k}**: ${v}`).join(', ')}`,
@@ -75,4 +76,4 @@ class PiperSetDefaultSettingsCommand extends SlashCommand {
   }
 }
 
-module.exports = PiperSetDefaultSettingsCommand;
+module.exports = { PiperSetDefaultSettingsCommand };

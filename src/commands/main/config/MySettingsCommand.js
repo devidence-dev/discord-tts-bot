@@ -1,19 +1,25 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder, MessageFlags } = require('discord.js');
 const { MESSAGE_EMBED } = require('../../../common/constants');
 const ProviderManager = require('../../../classes/tts/providers/ProviderManager');
 
-class MySettingsCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class MySettingsCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'my_settings',
       description: 'Get the TTS settings you currently have set for yourself.',
-      emoji: ':wrench:',
-      group: 'config',
-      guildOnly: true,
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly']
     });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
+    );
   }
 
   prepareFields(settings, localizer) {
@@ -35,9 +41,9 @@ class MySettingsCommand extends SlashCommand {
     });
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
-    const { provider, ...restSettings } = await this.client.ttsSettings.getCurrent(interaction);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
+    const { provider, ...restSettings } = await this.container.client.ttsSettings.getCurrent(interaction);
 
     const fields = this.prepareFields(restSettings, localizer);
     const embed = new EmbedBuilder()
@@ -56,9 +62,8 @@ class MySettingsCommand extends SlashCommand {
         }))
       ]);
 
-    return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral }
-    );
+    return interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
   }
 }
 
-module.exports = MySettingsCommand;
+module.exports = { MySettingsCommand };

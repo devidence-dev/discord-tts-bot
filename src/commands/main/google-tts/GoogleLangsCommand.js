@@ -1,16 +1,15 @@
-const LangsBaseCommand = require('../../base/LangsBaseCommand');
+const LangsBaseCommand = require('../../../classes/base/LangsBaseCommand');
 const { EmbedBuilder, Collection } = require('discord.js');
 const { MESSAGE_EMBED } = require('../../../common/constants');
 const { splitContentForEmbedFields } = require('../../../utils/embed');
 const languages = require('../../../../provider-data/google_languages.json');
 
 class GoogleLangsCommand extends LangsBaseCommand {
-  constructor(client) {
-    super(client, {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'google_langs',
-      description: 'Display a list of the languages supported by the Google Translate provider.',
-      emoji: ':page_facing_up:',
-      group: 'google-tts'
+      description: 'Display a list of the languages supported by the Google Translate provider.'
     });
 
     this.embeds = new Collection();
@@ -34,7 +33,7 @@ class GoogleLangsCommand extends LangsBaseCommand {
       name: localizer.t('command.google.langs.embed.page', { number: index + 1 }),
       value: field
     }));
-    
+
     embed.addFields(fields);
 
     return embed;
@@ -47,4 +46,4 @@ class GoogleLangsCommand extends LangsBaseCommand {
   }
 }
 
-module.exports = GoogleLangsCommand;
+module.exports = { GoogleLangsCommand };

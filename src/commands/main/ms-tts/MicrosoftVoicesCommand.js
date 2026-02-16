@@ -1,26 +1,31 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
+const { Command } = require('@sapphire/framework');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const MicrosoftProvider = require('../../../classes/tts/providers/MicrosoftProvider');
 const { MESSAGE_EMBED } = require('../../../common/constants');
 const languageData = require('../../../../provider-data/ttstool_microsoft_languages.json');
 
-class MicrosoftVoicesCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class MicrosoftVoicesCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'ms_voices',
       description: 'Display a list of the voices for any language supported by the Microsoft provider.',
-      emoji: ':speaking_head:',
-      group: 'ms-tts',
-      guildOnly: true,
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly']
+    });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
         .addStringOption((input) => {
           return input
             .setName('language')
             .setDescription('The language to check the voices for. Omit this to see the voices for your language.')
             .setRequired(false);
         })
-    });
+    );
   }
 
   createEmbed(localizer, language) {
@@ -43,7 +48,7 @@ class MicrosoftVoicesCommand extends SlashCommand {
         value: content
       }
     ]);
-    
+
     return embed;
   }
 
@@ -52,8 +57,8 @@ class MicrosoftVoicesCommand extends SlashCommand {
     return interaction.reply({ embeds: [embed] });
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
     const language = interaction.options.getString('language');
 
     if (language) {
@@ -65,11 +70,11 @@ class MicrosoftVoicesCommand extends SlashCommand {
     }
 
 
-    const settings = await this.client.ttsSettings.getCurrent(interaction);
+    const settings = await this.container.client.ttsSettings.getCurrent(interaction);
     const { language: userLanguage } = settings[MicrosoftProvider.NAME];
 
     return this.sendAvailableVoices(interaction, localizer, userLanguage);
   }
 }
 
-module.exports = MicrosoftVoicesCommand;
+module.exports = { MicrosoftVoicesCommand };

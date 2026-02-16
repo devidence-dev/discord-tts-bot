@@ -9,7 +9,6 @@
     "dev": "bun --watch ./src/app.js",
     "lint:errors-only": "bunx eslint src --quiet",
     "lint": "bunx eslint src",
-    "deploy": "bun ./src/command-deployer.js",
     "start-sharded": "bun ./src/sharded-client.js"
   },
   "engines": {
@@ -27,18 +26,18 @@
   "homepage": "https://github.com/moonstar-x/discord-tts-bot#readme",
   "dependencies": {
     "@discordjs/builders": "^1.13.1",
-    "@discordjs/opus": "^0.10.0",
     "@discordjs/voice": "^0.19.0",
-    "@greencoast/discord.js-extended": "^3.0.1",
     "@greencoast/djs-extended-data-provider-level": "^1.0.1",
     "@greencoast/djs-extended-data-provider-redis": "^1.0.0",
     "@greencoast/logger": "^1.1.1",
+    "@sapphire/framework": "^5.0.0",
     "@snazzah/davey": "^0.1.9",
     "axios": "^1.13.5",
     "deepmerge": "^4.3.1",
     "discord.js": "^14.25.1",
     "google-tts-api": "^2.0.2",
     "level": "^10.0.0",
+    "opusscript": "^0.1.1",
     "redis": "^5.10.0",
     "tweetnacl": "^1.0.3"
   },

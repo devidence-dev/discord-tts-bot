@@ -1,12 +1,11 @@
-const SayBaseCommand = require('../../base/SayBaseCommand');
+const SayBaseCommand = require('../../../classes/base/SayBaseCommand');
 
 class SayCommand extends SayBaseCommand {
-  constructor(client) {
-    super(client, {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'say',
-      description: 'Send a TTS message in your voice channel with your own settings or the ones saved for this server.',
-      emoji: ':speaking_head:',
-      group: 'all-tts'
+      description: 'Send a TTS message in your voice channel with your own settings or the ones saved for this server.'
     });
   }
 
@@ -15,4 +14,4 @@ class SayCommand extends SayBaseCommand {
   }
 }
 
-module.exports = SayCommand;
+module.exports = { SayCommand };

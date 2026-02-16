@@ -1,19 +1,25 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { PermissionsBitField, SlashCommandBuilder } = require('discord.js');
 const logger = require('@greencoast/logger');
 const GoogleProvider = require('../../../../classes/tts/providers/GoogleProvider');
 const languages = require('../../../../../provider-data/google_languages.json');
 
-class GoogleSetChannelSettingsCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class GoogleSetChannelSettingsCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'google_set_channel',
       description: 'Sets the settings to be used with message-only based TTS from Google.',
-      emoji: ':pencil2:',
-      group: 'google-tts',
-      guildOnly: true,
-      userPermissions: [PermissionsBitField.Flags.ManageChannels],
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly', 'ManageChannels']
+    });
+  }
+
+  registerApplicationCommands(registry) {
+    if (!this.container.config.get('ENABLE_TTS_CHANNELS')) return;
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
         .addSubcommand((input) => {
           return input
             .setName('language')
@@ -37,7 +43,7 @@ class GoogleSetChannelSettingsCommand extends SlashCommand {
                 .setChoices(...GoogleProvider.getSupportedSpeedChoices());
             });
         })
-    });
+    );
   }
 
   async handleLanguage(interaction, localizer) {
@@ -48,7 +54,7 @@ class GoogleSetChannelSettingsCommand extends SlashCommand {
       return interaction.reply({ content: localizer.t('channel_commands.google.settings.language.invalid') });
     }
 
-    await this.client.ttsSettings.set(interaction.channel, { [GoogleProvider.NAME]: { language } });
+    await this.container.client.ttsSettings.set(interaction.channel, { [GoogleProvider.NAME]: { language } });
 
     logger.info(`${interaction.guild.name} has changed the google language for the channel ${interaction.channel.name} to ${language}.`);
     return interaction.reply({ content: localizer.t('channel_commands.google.settings.language.success', { language: languageInfo.name }) });
@@ -57,14 +63,14 @@ class GoogleSetChannelSettingsCommand extends SlashCommand {
   async handleSpeed(interaction, localizer) {
     const speed = interaction.options.getString('value');
 
-    await this.client.ttsSettings.set(interaction.channel, { [GoogleProvider.NAME]: { speed } });
+    await this.container.client.ttsSettings.set(interaction.channel, { [GoogleProvider.NAME]: { speed } });
 
     logger.info(`${interaction.guild.name} has changed the google speed for the channel ${interaction.channel.name} to ${speed}.`);
     return interaction.reply({ content: localizer.t('channel_commands.google.settings.speed.success', { speed }) });
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
     const subCommand = interaction.options.getSubcommand();
 
     switch (subCommand) {
@@ -78,4 +84,4 @@ class GoogleSetChannelSettingsCommand extends SlashCommand {
   }
 }
 
-module.exports = GoogleSetChannelSettingsCommand;
+module.exports = { GoogleSetChannelSettingsCommand };

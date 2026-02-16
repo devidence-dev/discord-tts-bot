@@ -1,19 +1,25 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder } = require('discord.js');
 const { MESSAGE_EMBED } = require('../../../common/constants');
 const ProviderManager = require('../../../classes/tts/providers/ProviderManager');
 
-class DefaultSettingsCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class DefaultSettingsCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'default_settings',
       description: 'Get the default TTS settings currently set for the guild.',
-      emoji: ':wrench:',
-      group: 'config',
-      guildOnly: true,
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly']
     });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
+    );
   }
 
   prepareFields(settings, localizer) {
@@ -35,9 +41,9 @@ class DefaultSettingsCommand extends SlashCommand {
     });
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
-    const currentSettings = await this.client.ttsSettings.getCurrentForGuild(interaction.guild);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
+    const currentSettings = await this.container.client.ttsSettings.getCurrentForGuild(interaction.guild);
     const { provider, ...restSettings } = currentSettings;
 
     const fields = this.prepareFields(restSettings, localizer);
@@ -50,7 +56,6 @@ class DefaultSettingsCommand extends SlashCommand {
           name: localizer.t('command.settings.default.current.provider'),
           value: ProviderManager.PROVIDER_FRIENDLY_NAMES[provider]
         },
-        // Adding the fields in bulk
         ...fields.map((field) => ({
           name: field.title,
           value: field.text,
@@ -62,4 +67,4 @@ class DefaultSettingsCommand extends SlashCommand {
   }
 }
 
-module.exports = DefaultSettingsCommand;
+module.exports = { DefaultSettingsCommand };

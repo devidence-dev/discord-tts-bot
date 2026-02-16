@@ -1,10 +1,10 @@
 const path = require('path');
 const logger = require('@greencoast/logger');
 const { ShardingManager } = require('discord.js');
-const { ConfigProvider } = require('@greencoast/discord.js-extended');
+const ConfigService = require('./services/ConfigService');
 
 // Just need the token in here, the rest will be handled by the actual client.
-const config = new ConfigProvider({
+const config = new ConfigService({
   env: process.env,
   configPath: path.join(__dirname, '../config/settings.json'),
   types: {

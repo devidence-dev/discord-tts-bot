@@ -1,41 +1,45 @@
 /* eslint-disable max-statements */
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
 const logger = require('@greencoast/logger');
 const { getCantConnectToChannelReason } = require('../../utils/channel');
 const { cleanMessage } = require('../../utils/mentions');
 
-class SayBaseCommand extends SlashCommand {
-  constructor(client, options) {
-    super(client, {
-      name: options.name,
-      description: options.description,
-      emoji: options.emoji,
-      group: options.group,
-      guildOnly: true,
-      dataBuilder: new SlashCommandBuilder()
-        .addStringOption((input) => {
-          return input
-            .setName('message')
-            .setDescription('The message to say in your voice channel.')
-            .setRequired(true);
-        })
+class SayBaseCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
+      preconditions: ['GuildOnly']
     });
+  }
+
+  registerApplicationCommands(registry) {
+    const builder = new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description)
+      .addStringOption((input) => {
+        return input
+          .setName('message')
+          .setDescription('The message to say in your voice channel.')
+          .setRequired(true);
+      });
+
+    registry.registerChatInputCommand(builder);
   }
 
   getProviderName() {
     throw new Error('getProviderName() not implemented!');
   }
 
-  async run(interaction) {
+  async chatInputRun(interaction) {
     await interaction.deferReply();
 
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
-    const ttsPlayer = this.client.getTTSPlayer(interaction.guild);
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
+    const ttsPlayer = this.container.client.getTTSPlayer(interaction.guild);
     const connection = ttsPlayer.voice.getConnection();
 
-    const currentSettings = await this.client.ttsSettings.getCurrent(interaction);
+    const currentSettings = await this.container.client.ttsSettings.getCurrent(interaction);
     const providerName = this.getProviderName(currentSettings);
     const extras = currentSettings[providerName];
 
@@ -43,7 +47,7 @@ class SayBaseCommand extends SlashCommand {
     const { channel: memberChannel } = interaction.member.voice;
     const myChannel = myVoice?.channel;
 
-    const messageIntro = this.client.config.get('ENABLE_WHO_SAID') ? `${interaction.member.displayName} said ` : '';
+    const messageIntro = this.container.config.get('ENABLE_WHO_SAID') ? `${interaction.member.displayName} said ` : '';
     const userMessage = interaction.options.getString('message');
 
     const message = cleanMessage(`${messageIntro}${userMessage}`, {

@@ -1,20 +1,26 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
+const { Command } = require('@sapphire/framework');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder } = require('discord.js');
 const axios = require('axios');
 const PiperProvider = require('../../../classes/tts/providers/PiperProvider');
 const { MESSAGE_EMBED } = require('../../../common/constants');
 
-class PiperVoicesCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class PiperVoicesCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'piper_voices',
       description: 'Display a list of the voices available in the Piper TTS service.',
-      emoji: ':speaking_head:',
-      group: 'piper-tts',
-      guildOnly: true,
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly']
     });
+  }
+
+  registerApplicationCommands(registry) {
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
+    );
   }
 
   async createEmbed(localizer) {
@@ -25,7 +31,6 @@ class PiperVoicesCommand extends SlashCommand {
       .setThumbnail(MESSAGE_EMBED.langThumbnail);
 
     try {
-      // Consultar modelos disponibles del servidor Piper
       const response = await axios.get('http://piper-tts:8000/models', {
         timeout: 5000
       });
@@ -38,7 +43,6 @@ class PiperVoicesCommand extends SlashCommand {
           value: 'Download a model using: `docker exec piper-tts python3 -m piper.download --voice LANGUAGE-VOICE-medium --output-dir /opt/app/piper-models`\n\nExample: `es_MX-ald-medium`, `en_US-amy-medium`'
         });
       } else {
-        // Agrupar por idioma
         const byLanguage = {};
         models.forEach(model => {
           if (!byLanguage[model.language]) {
@@ -47,7 +51,6 @@ class PiperVoicesCommand extends SlashCommand {
           byLanguage[model.language].push(model);
         });
 
-        // Agregar campos por idioma
         Object.entries(byLanguage).forEach(([language, modelsInLang]) => {
           const modelsList = modelsInLang
             .map(m => `🎤 **${m.name}** (${m.size_mb}MB)`)
@@ -72,8 +75,8 @@ class PiperVoicesCommand extends SlashCommand {
     return embed;
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
 
     try {
       const embed = await this.createEmbed(localizer);
@@ -87,4 +90,4 @@ class PiperVoicesCommand extends SlashCommand {
   }
 }
 
-module.exports = PiperVoicesCommand;
+module.exports = { PiperVoicesCommand };

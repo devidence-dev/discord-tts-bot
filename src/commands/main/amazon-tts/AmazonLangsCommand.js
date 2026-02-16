@@ -1,16 +1,15 @@
-const LangsBaseCommand = require('../../base/LangsBaseCommand');
+const LangsBaseCommand = require('../../../classes/base/LangsBaseCommand');
 const { EmbedBuilder } = require('discord.js');
 const { MESSAGE_EMBED } = require('../../../common/constants');
 const { splitContentForEmbedFields } = require('../../../utils/embed');
 const languageData = require('../../../../provider-data/ttstool_amazon_languages.json');
 
 class AmazonLangsCommand extends LangsBaseCommand {
-  constructor(client) {
-    super(client, {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'amazon_langs',
-      description: 'Display a list of the languages supported by the Amazon provider.',
-      emoji: ':page_facing_up:',
-      group: 'amazon-tts'
+      description: 'Display a list of the languages supported by the Amazon provider.'
     });
   }
 
@@ -47,4 +46,4 @@ class AmazonLangsCommand extends LangsBaseCommand {
   }
 }
 
-module.exports = AmazonLangsCommand;
+module.exports = { AmazonLangsCommand };

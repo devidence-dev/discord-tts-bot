@@ -1,20 +1,27 @@
-const { SlashCommand } = require('@greencoast/discord.js-extended');
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { Command } = require('@sapphire/framework');
+const { SlashCommandBuilder } = require('discord.js');
 const { EmbedBuilder } = require('discord.js');
 const merge = require('deepmerge');
 const { MESSAGE_EMBED } = require('../../../../common/constants');
 const ProviderManager = require('../../../../classes/tts/providers/ProviderManager');
 
-class ChannelSettingsCommand extends SlashCommand {
-  constructor(client) {
-    super(client, {
+class ChannelSettingsCommand extends Command {
+  constructor(context, options) {
+    super(context, {
+      ...options,
       name: 'channel_settings',
       description: 'Get the TTS settings associated to this channel (if applies).',
-      emoji: ':wrench:',
-      group: 'config',
-      guildOnly: true,
-      dataBuilder: new SlashCommandBuilder()
+      preconditions: ['GuildOnly']
     });
+  }
+
+  registerApplicationCommands(registry) {
+    if (!this.container.config.get('ENABLE_TTS_CHANNELS')) return;
+    registry.registerChatInputCommand(
+      new SlashCommandBuilder()
+        .setName(this.name)
+        .setDescription(this.description)
+    );
   }
 
   handleDisabled(interaction, localizer) {
@@ -45,7 +52,7 @@ class ChannelSettingsCommand extends SlashCommand {
           value: settingsField.text
         }
       ]);
-      
+
     return interaction.reply({ embeds: [embed] });
   }
 
@@ -64,9 +71,9 @@ class ChannelSettingsCommand extends SlashCommand {
     return { title: friendlyName, text };
   }
 
-  async run(interaction) {
-    const localizer = this.client.localizer.getLocalizer(interaction.guild);
-    const channelSettings = await this.client.ttsSettings.get(interaction.channel);
+  async chatInputRun(interaction) {
+    const localizer = this.container.localizer.getLocalizer(interaction.guild);
+    const channelSettings = await this.container.client.ttsSettings.get(interaction.channel);
 
     if (!channelSettings || !channelSettings.provider) {
       return this.handleDisabled(interaction, localizer);
@@ -76,4 +83,4 @@ class ChannelSettingsCommand extends SlashCommand {
   }
 }
 
-module.exports = ChannelSettingsCommand;
+module.exports = { ChannelSettingsCommand };
