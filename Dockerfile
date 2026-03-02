@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM oven/bun:1.3.10-debian AS builder
+FROM oven/bun:1.3.10-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
@@ -13,7 +13,7 @@ WORKDIR /opt/app
 
 COPY package.json bun.lock* bunfig.toml* ./
 
-RUN bun install --production
+RUN bun install --production --frozen-lockfile
 
 # Stage 2: Runtime (Distroless)
 # Utilizamos una imagen "distroless" para reducir drásticamente el tamaño y mejorar la seguridad
@@ -36,7 +36,7 @@ COPY --from=builder /usr/local/bin/bun /usr/bin/bun
 
 # Copiamos binarios estáticos de ffmpeg (esenciales para reproducción de audio)
 COPY --from=mwader/static-ffmpeg:7.1 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:7.1 /ffprobe /usr/local/bin/
+# COPY --from=mwader/static-ffmpeg:7.1 /ffprobe /usr/local/bin/
 
 WORKDIR /opt/app
 
