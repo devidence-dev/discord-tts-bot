@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM oven/bun:1.3.10-slim AS builder
+FROM oven/bun:1.3.11-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
