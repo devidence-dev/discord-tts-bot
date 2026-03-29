@@ -1,0 +1,54 @@
+{
+  "name": "Discord TTS Bot Dev Container",
+  "image": "oven/bun:1.3.11",
+  "shutdownAction": "stopContainer",
+  "runArgs": [
+    "--name",
+    "discord-tts-bot-dev"
+  ],
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/bun/.ssh,type=bind,consistency=cached,readonly",
+    "source=/usr/bin/git,target=/usr/bin/git,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/bun/.gitconfig,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.claude,target=/home/bun/.claude,type=bind,consistency=cached"
+  ],
+  "remoteEnv": {
+    "SSH_AUTH_SOCK": "/tmp/ssh-agent.sock"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": "true",
+      "configureZshAsDefaultShell": "true",
+      "installOhMyZsh": "true",
+      "upgradePackages": "true",
+      "username": "bun"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "oven.bun-vscode",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "streetsidesoftware.code-spell-checker",
+        "ms-vscode.docker",
+        "github.copilot",
+        "anthropic.claude-code"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "[javascript]": {
+          "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+        },
+        "eslint.validate": [
+          "javascript"
+        ]
+      }
+    }
+  },
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y --no-install-recommends python3 make gcc g++ zlib1g-dev && bun install",
+  "remoteUser": "bun"
+}
