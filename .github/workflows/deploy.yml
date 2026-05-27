@@ -1,15 +1,6 @@
 name: 🚀 Build and Deploy
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - 'src/**'
-      - 'provider-data/**'
-      - 'Dockerfile'
-      - 'package.json'
-      - 'bun.lock'
-      - 'bunfig.toml'
   workflow_dispatch:
     inputs:
       bump:
