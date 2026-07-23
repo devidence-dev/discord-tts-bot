@@ -1,0 +1,427 @@
+{
+  ".devcontainer/devcontainer.json": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "13f13ad2d79df6a2543a4a8c35ebe626",
+    "semantic_hash": "13f13ad2d79df6a2543a4a8c35ebe626"
+  },
+  "app.json": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "80d34ddf028d6b3b000c666e2d665af4",
+    "semantic_hash": "80d34ddf028d6b3b000c666e2d665af4"
+  },
+  "init-replit.sh": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "dddf7275144d90e691aff3b90abb4d56",
+    "semantic_hash": "dddf7275144d90e691aff3b90abb4d56"
+  },
+  "package.json": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "97ad33d6e8b5014a1ec489689ce16c0e",
+    "semantic_hash": "97ad33d6e8b5014a1ec489689ce16c0e"
+  },
+  "piper-server.py": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "9f87412bf9e102fcd43aded0af38f767",
+    "semantic_hash": "9f87412bf9e102fcd43aded0af38f767"
+  },
+  "provider-data/google_languages.json": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "f1beb176299dd44e11bd8aebec66cc62",
+    "semantic_hash": "f1beb176299dd44e11bd8aebec66cc62"
+  },
+  "provider-data/ttstool_amazon_languages.json": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "563649591f29543454d4c08835094809",
+    "semantic_hash": "563649591f29543454d4c08835094809"
+  },
+  "provider-data/ttstool_microsoft_languages.json": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "8150925956843bbb53897b7d03e17a67",
+    "semantic_hash": "8150925956843bbb53897b7d03e17a67"
+  },
+  "pyproject.toml": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "1d99fe38a45951e7b9d39d4e5acb06db",
+    "semantic_hash": "1d99fe38a45951e7b9d39d4e5acb06db"
+  },
+  "src/app.js": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "9da1c42e200aaa59a2a803bf29e22d73",
+    "semantic_hash": "9da1c42e200aaa59a2a803bf29e22d73"
+  },
+  "src/classes/Queue.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "285b284968301901d5d7ee4aa79b6a9b",
+    "semantic_hash": "285b284968301901d5d7ee4aa79b6a9b"
+  },
+  "src/classes/Scheduler.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "66eaf236e6576b01fc942d1901545d0f",
+    "semantic_hash": "66eaf236e6576b01fc942d1901545d0f"
+  },
+  "src/classes/VoiceManager.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "616d5fe52a5f522cccf2890e46769b88",
+    "semantic_hash": "616d5fe52a5f522cccf2890e46769b88"
+  },
+  "src/classes/extensions/TTSClient.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "a2a3b241561b0642c4384b156cf63e5c",
+    "semantic_hash": "a2a3b241561b0642c4384b156cf63e5c"
+  },
+  "src/classes/tts/CachedTTSSettings.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "6192e98b73295edaaf1dc21cd12c7c02",
+    "semantic_hash": "6192e98b73295edaaf1dc21cd12c7c02"
+  },
+  "src/classes/tts/Payload.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "d07e282a1b1e13e051fc68e8916719fc",
+    "semantic_hash": "d07e282a1b1e13e051fc68e8916719fc"
+  },
+  "src/classes/tts/TTSChannelHandler.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "5b20976c93050fd9a08af583ebee66c1",
+    "semantic_hash": "5b20976c93050fd9a08af583ebee66c1"
+  },
+  "src/classes/tts/TTSPlayer.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "0f98c8a736940a73ad9717344387fd46",
+    "semantic_hash": "0f98c8a736940a73ad9717344387fd46"
+  },
+  "src/classes/tts/providers/AbstractProvider.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "42bd33bd690ee848d806985f85806ed2",
+    "semantic_hash": "42bd33bd690ee848d806985f85806ed2"
+  },
+  "src/classes/tts/providers/AeiouProvider.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "4fa5b1e6c28b37701a435ae4608d0460",
+    "semantic_hash": "4fa5b1e6c28b37701a435ae4608d0460"
+  },
+  "src/classes/tts/providers/AmazonProvider.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "6251da75aad90abd2d79e1ee1bdc6feb",
+    "semantic_hash": "6251da75aad90abd2d79e1ee1bdc6feb"
+  },
+  "src/classes/tts/providers/GoogleProvider.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "351336b57ec0b2c9fbb6e87b00cd077f",
+    "semantic_hash": "351336b57ec0b2c9fbb6e87b00cd077f"
+  },
+  "src/classes/tts/providers/MicrosoftProvider.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "325edc81640481359473d8721a770bd5",
+    "semantic_hash": "325edc81640481359473d8721a770bd5"
+  },
+  "src/classes/tts/providers/PiperProvider.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "b69002386128a7fd3baa991974dafd13",
+    "semantic_hash": "b69002386128a7fd3baa991974dafd13"
+  },
+  "src/classes/tts/providers/ProviderManager.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "729d7587e38e283dc96259247b0cb557",
+    "semantic_hash": "729d7587e38e283dc96259247b0cb557"
+  },
+  "src/command-deployer.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "8b5d04d4232c0d063f40bfa92d68fee5",
+    "semantic_hash": "8b5d04d4232c0d063f40bfa92d68fee5"
+  },
+  "src/commands/base/LangsBaseCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "768c1a84476059a6b93c5200e2030610",
+    "semantic_hash": "768c1a84476059a6b93c5200e2030610"
+  },
+  "src/commands/base/SayBaseCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "0bb9920fe382a397d4b30b1a4f6bf0e8",
+    "semantic_hash": "0bb9920fe382a397d4b30b1a4f6bf0e8"
+  },
+  "src/commands/main/all-tts/SayCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "895d856ebb611406eea796d084a4ed13",
+    "semantic_hash": "895d856ebb611406eea796d084a4ed13"
+  },
+  "src/commands/main/all-tts/StopCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "34de08d903cd7d7c72a40a8be1e1f08a",
+    "semantic_hash": "34de08d903cd7d7c72a40a8be1e1f08a"
+  },
+  "src/commands/main/amazon-tts/AmazonLangsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "0b5ddb81254f8ab2142ac87687bc0a02",
+    "semantic_hash": "0b5ddb81254f8ab2142ac87687bc0a02"
+  },
+  "src/commands/main/amazon-tts/AmazonSayCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "832a6630a25a39bed612c073e37f976d",
+    "semantic_hash": "832a6630a25a39bed612c073e37f976d"
+  },
+  "src/commands/main/amazon-tts/AmazonSetDefaultSettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "7b051c5f8c8a7a3857505266e5e87939",
+    "semantic_hash": "7b051c5f8c8a7a3857505266e5e87939"
+  },
+  "src/commands/main/amazon-tts/AmazonSetMySettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "bf27564612f143ceb7905fe8fca7be0c",
+    "semantic_hash": "bf27564612f143ceb7905fe8fca7be0c"
+  },
+  "src/commands/main/amazon-tts/AmazonVoicesCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "0940b1ccc9d6f3285d02a5467264f6ee",
+    "semantic_hash": "0940b1ccc9d6f3285d02a5467264f6ee"
+  },
+  "src/commands/main/config/DefaultSettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "73bd4825a0b9d311f2504528b69b19ce",
+    "semantic_hash": "73bd4825a0b9d311f2504528b69b19ce"
+  },
+  "src/commands/main/config/MySettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "bd04d08b9bf0bc2a1e2e944bb95052a9",
+    "semantic_hash": "bd04d08b9bf0bc2a1e2e944bb95052a9"
+  },
+  "src/commands/main/config/SetDefaultProviderCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "249acbcd1d3d576e9f325b14e3c5167a",
+    "semantic_hash": "249acbcd1d3d576e9f325b14e3c5167a"
+  },
+  "src/commands/main/config/SetLocaleCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "43991e090d88bddc13c8fd95d23f4030",
+    "semantic_hash": "43991e090d88bddc13c8fd95d23f4030"
+  },
+  "src/commands/main/config/SetMyProviderCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "f036e222853f8480d3ab97a664926ba6",
+    "semantic_hash": "f036e222853f8480d3ab97a664926ba6"
+  },
+  "src/commands/main/config/SetTimeoutCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "189f9de3051edcd6decbf237c8fd488a",
+    "semantic_hash": "189f9de3051edcd6decbf237c8fd488a"
+  },
+  "src/commands/main/google-tts/GoogleLangsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "4bffb4846fd6b7396acd834b057c8bef",
+    "semantic_hash": "4bffb4846fd6b7396acd834b057c8bef"
+  },
+  "src/commands/main/google-tts/GoogleSayCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "b59df330897ef00aff98811990e2323e",
+    "semantic_hash": "b59df330897ef00aff98811990e2323e"
+  },
+  "src/commands/main/google-tts/GoogleSetDefaultSettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "4e03f266330d68f50826cf4ed9da65d5",
+    "semantic_hash": "4e03f266330d68f50826cf4ed9da65d5"
+  },
+  "src/commands/main/google-tts/GoogleSetMySettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "e0d41ba845e17bdaf28723cfc9df9508",
+    "semantic_hash": "e0d41ba845e17bdaf28723cfc9df9508"
+  },
+  "src/commands/main/misc/HelpCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "a4dd554e306dae0d8e44fab61b894786",
+    "semantic_hash": "a4dd554e306dae0d8e44fab61b894786"
+  },
+  "src/commands/main/ms-tts/MicrosoftLangsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "0da8c33f72e177f0c2e8f12e9f25543e",
+    "semantic_hash": "0da8c33f72e177f0c2e8f12e9f25543e"
+  },
+  "src/commands/main/ms-tts/MicrosoftSayCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "43767eeb856d8d84316113913bbd4d21",
+    "semantic_hash": "43767eeb856d8d84316113913bbd4d21"
+  },
+  "src/commands/main/ms-tts/MicrosoftSetDefaultSettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "3bab39205208f561f5e5109548391846",
+    "semantic_hash": "3bab39205208f561f5e5109548391846"
+  },
+  "src/commands/main/ms-tts/MicrosoftSetMySettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "31e0d3d2574526d8eeb46129c826dfc3",
+    "semantic_hash": "31e0d3d2574526d8eeb46129c826dfc3"
+  },
+  "src/commands/main/ms-tts/MicrosoftVoicesCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "11149b419d3378f447955b157b3c65a3",
+    "semantic_hash": "11149b419d3378f447955b157b3c65a3"
+  },
+  "src/commands/main/other-tts/SayAeiouCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "af3ed41348ff99e69d2a47c153779643",
+    "semantic_hash": "af3ed41348ff99e69d2a47c153779643"
+  },
+  "src/commands/main/piper-tts/PiperLangsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "a77d35533665a78d157d6a3640568af6",
+    "semantic_hash": "a77d35533665a78d157d6a3640568af6"
+  },
+  "src/commands/main/piper-tts/PiperSayCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "b889e6f7ce33d51a34c6d224ab0c7713",
+    "semantic_hash": "b889e6f7ce33d51a34c6d224ab0c7713"
+  },
+  "src/commands/main/piper-tts/PiperSetDefaultSettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "ec54095a30fe3162181c660df36b881b",
+    "semantic_hash": "ec54095a30fe3162181c660df36b881b"
+  },
+  "src/commands/main/piper-tts/PiperSetMySettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "f819fa72e12ec3d017b6b61bb54cc4ae",
+    "semantic_hash": "f819fa72e12ec3d017b6b61bb54cc4ae"
+  },
+  "src/commands/main/piper-tts/PiperVoicesCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "65361ca0a147757fee9dc45f2ea90005",
+    "semantic_hash": "65361ca0a147757fee9dc45f2ea90005"
+  },
+  "src/commands/optional/channel-tts/amazon-tts/AmazonSetChannelSettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "a302ad8675eaf622e523199f249290b8",
+    "semantic_hash": "a302ad8675eaf622e523199f249290b8"
+  },
+  "src/commands/optional/channel-tts/config/ChannelSettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "5ac09ba0a7153a204264a713cca074bf",
+    "semantic_hash": "5ac09ba0a7153a204264a713cca074bf"
+  },
+  "src/commands/optional/channel-tts/config/DeleteChannelProviderCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "bfd6588343447883cbb25b4ca2e52490",
+    "semantic_hash": "bfd6588343447883cbb25b4ca2e52490"
+  },
+  "src/commands/optional/channel-tts/config/SetChannelProvider.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "ef0d395cc765549975068d9543528dc3",
+    "semantic_hash": "ef0d395cc765549975068d9543528dc3"
+  },
+  "src/commands/optional/channel-tts/google-tts/GoogleSetChannelSettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "d198cb54887bdd163c2d161da6eab8b1",
+    "semantic_hash": "d198cb54887bdd163c2d161da6eab8b1"
+  },
+  "src/commands/optional/channel-tts/ms-tts/MicrosoftSetChannelSettingsCommand.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "e6ffabadd38ef16ebc46f74def133ee3",
+    "semantic_hash": "e6ffabadd38ef16ebc46f74def133ee3"
+  },
+  "src/common/constants.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "af6cbc550ffadfbcf1c8a6011f93ccd5",
+    "semantic_hash": "af6cbc550ffadfbcf1c8a6011f93ccd5"
+  },
+  "src/errors/InvalidProviderError.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "130d9ffe29b4ae62a0105965d6cff307",
+    "semantic_hash": "130d9ffe29b4ae62a0105965d6cff307"
+  },
+  "src/errors/index.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "409e18cf4f26c0868d19bb51cc49faa3",
+    "semantic_hash": "409e18cf4f26c0868d19bb51cc49faa3"
+  },
+  "src/locales/en.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "ee63c1a208e5cb7129fe272c29acdead",
+    "semantic_hash": "ee63c1a208e5cb7129fe272c29acdead"
+  },
+  "src/locales/es.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "e38639940456e60e9ac9f28c33c4b07f",
+    "semantic_hash": "e38639940456e60e9ac9f28c33c4b07f"
+  },
+  "src/locales/fr.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "8fb6a890a8a15f8725dc2db291f4be3b",
+    "semantic_hash": "8fb6a890a8a15f8725dc2db291f4be3b"
+  },
+  "src/locales/index.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "734f884c9d81e662c5e0b8e4c7577ddc",
+    "semantic_hash": "734f884c9d81e662c5e0b8e4c7577ddc"
+  },
+  "src/sharded-client.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "c12c4fdad57425c2300e85ee161c2a30",
+    "semantic_hash": "c12c4fdad57425c2300e85ee161c2a30"
+  },
+  "src/utils/channel.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "e058f36869af06d84b8354832a13373b",
+    "semantic_hash": "e058f36869af06d84b8354832a13373b"
+  },
+  "src/utils/embed.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "9942d98318bf2ebbea63431a35db26d7",
+    "semantic_hash": "9942d98318bf2ebbea63431a35db26d7"
+  },
+  "src/utils/keep-alive.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "eee6534137f02a173e3041ad0bf02c92",
+    "semantic_hash": "eee6534137f02a173e3041ad0bf02c92"
+  },
+  "src/utils/mentions.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "76135f6aec17243956c07d8d6e2141b0",
+    "semantic_hash": "76135f6aec17243956c07d8d6e2141b0"
+  },
+  "src/utils/upgrade-utils.js": {
+    "mtime": 1784085919.8673325,
+    "ast_hash": "2c023bf8699d85eb27cc614d3888996e",
+    "semantic_hash": "2c023bf8699d85eb27cc614d3888996e"
+  },
+  ".github/ISSUE_TEMPLATE/bug_report.md": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "a935c3257178cf408cd3a584e2b95ebb",
+    "semantic_hash": "a935c3257178cf408cd3a584e2b95ebb"
+  },
+  ".github/ISSUE_TEMPLATE/feature_request.md": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "8a71d387faf29af0d7fa04d3c8bff9ed",
+    "semantic_hash": "8a71d387faf29af0d7fa04d3c8bff9ed"
+  },
+  ".github/ISSUE_TEMPLATE/question.md": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "3af61309655cd3ceca5a49908a6c53ac",
+    "semantic_hash": "3af61309655cd3ceca5a49908a6c53ac"
+  },
+  ".github/PULL_REQUEST_TEMPLATE.md": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "f2b95294ca4b4b8e6f2bfdfe8b239ec1",
+    "semantic_hash": "f2b95294ca4b4b8e6f2bfdfe8b239ec1"
+  },
+  ".github/workflows/ci.yml": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "ae368fdda7e82b79d1e69c83722b795f",
+    "semantic_hash": "ae368fdda7e82b79d1e69c83722b795f"
+  },
+  ".github/workflows/deploy.yml": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "2634e77937291f677d5af4b19a4c67ef",
+    "semantic_hash": "2634e77937291f677d5af4b19a4c67ef"
+  },
+  ".github/workflows/docker-build.yml": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "32c22695e846ae9df40c46ab424b8af0",
+    "semantic_hash": "32c22695e846ae9df40c46ab424b8af0"
+  },
+  "README.md": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "7b86303d0f211eda30b1caf21f9d66c8",
+    "semantic_hash": "7b86303d0f211eda30b1caf21f9d66c8"
+  },
+  "docker-compose.yml": {
+    "mtime": 1784085919.8633327,
+    "ast_hash": "104fdcc4324fedb649046ad7623a0ad6",
+    "semantic_hash": "104fdcc4324fedb649046ad7623a0ad6"
+  }
+}
