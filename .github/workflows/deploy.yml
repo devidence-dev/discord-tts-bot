@@ -37,7 +37,7 @@ jobs:
       version: ${{ steps.semver.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -87,7 +87,7 @@ jobs:
       id-token: write # required so this job can request a GitHub OIDC token for Infisical
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Fetch GHCR_TOKEN from Infisical
         uses: Infisical/secrets-action@77ab1f4ccd183a543cb5b42435fbd181189f4995 # v1.0.16
@@ -118,11 +118,17 @@ jobs:
         run: docker push ghcr.io/devidence-dev/discord-tts-bot:${{ needs.version.outputs.tag }}
 
       - name: "🏷️ Create and push git tag ${{ needs.version.outputs.tag }}"
+        env:
+          TAG: ${{ needs.version.outputs.tag }}
         run: |
           git config user.email "ci@devidence.dev"
           git config user.name "homelab-ci"
-          git tag ${{ needs.version.outputs.tag }}
-          git push origin ${{ needs.version.outputs.tag }}
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG ya existe, no se recrea."
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
 
   # ==========================================
   # 🚀 Deploy to production
