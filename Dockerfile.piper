@@ -1,9 +1,9 @@
 FROM python:3.13.11-slim
 
-# Copiar uv desde imagen oficial
+# Copy uv from the official image.
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Dependencias del sistema para Piper
+# System dependencies for Piper.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     espeak-ng \
     ffmpeg \
@@ -12,26 +12,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /opt/app
 
-# Crear directorio para modelos/voices
+# Create a directory for models and voices.
 RUN mkdir -p /opt/app/piper-models
 
-# Copiar metadata de dependencias (mejor caching)
+# Copy dependency metadata for better caching.
 COPY pyproject.toml ./
 COPY uv.lock ./
 
-# Instalar SOLO dependencias (omite instalar el proyecto local)
-# --no-editable: no instala el proyecto como editable
-# --no-dev: excluye dependencias de desarrollo
-# --no-install-project: NO instala el proyecto raíz, pero sí sus dependencias
+# Install dependencies ONLY (skips installing the local project).
+# --no-editable: do not install the project as editable.
+# --no-dev: exclude development dependencies.
+# --no-install-project: do not install the root project, but install its dependencies.
 RUN uv sync --frozen --no-dev --no-editable --no-install-project
 
 ENV PATH="/opt/app/.venv/bin:$PATH"
 
-# Copiar servidor Piper
+# Copy the Piper server.
 COPY piper-server.py ./
 
-# Exponer puerto
+# Expose the port.
 EXPOSE 8000
 
-# Ejecutar servidor FastAPI con unbuffered output para ver logs
+# Run the FastAPI server with unbuffered output to view logs.
 CMD ["python", "-u", "piper-server.py"]

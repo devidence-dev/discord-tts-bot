@@ -12,12 +12,12 @@ app = FastAPI(title="Piper TTS Service")
 
 MODELS_DIR = Path("/opt/app/piper-models")
 TMP_DIR = Path("/tmp")
-FILE_TIMEOUT = 5 * 60  # 5 minutos en segundos
+FILE_TIMEOUT = 5 * 60  # 5 minutes in seconds
 
 def cleanup_old_files():
     """
-    Limpiador de archivos antiguos de Piper
-    Se ejecuta cada minuto
+    Cleans up old Piper files.
+    Runs every minute.
     """
     while True:
         try:
@@ -30,9 +30,9 @@ def cleanup_old_files():
         except Exception as e:
             print(f"Cleanup error: {e}")
         
-        time.sleep(60)  # Ejecutar cada minuto
+        time.sleep(60)  # Run every minute.
 
-# Iniciar limpiador en background thread
+# Start the cleaner in a background thread.
 cleanup_thread = threading.Thread(target=cleanup_old_files, daemon=True)
 cleanup_thread.start()
 
@@ -43,12 +43,12 @@ async def health():
 @app.get("/models")
 async def list_models():
     """
-    Listar todos los modelos disponibles
+    List all available models.
     """
     try:
         models = []
         
-        # Escanear el directorio de modelos
+        # Scan the models directory.
         if MODELS_DIR.exists():
             for model_folder in MODELS_DIR.iterdir():
                 if model_folder.is_dir():
@@ -56,10 +56,10 @@ async def list_models():
                     model_file = model_folder / f"{model_name}.onnx"
                     
                     if model_file.exists():
-                        # Obtener información del modelo
+                        # Get model information.
                         size_mb = model_file.stat().st_size / (1024 * 1024)
                         
-                        # Parsear nombre: language-voice
+                        # Parse the name: language-voice.
                         parts = model_name.split('-')
                         if len(parts) >= 2:
                             language = f"{parts[0]}-{parts[1]}"
@@ -86,31 +86,31 @@ async def list_models():
 @app.post("/synthesize")
 async def synthesize(text: str, language: str = "es_MX", voice: str = "ald", speed: str = "normal"):
     """
-    Sintetizar texto a voz usando Piper TTS
-    
-    Parámetros:
-    - text: Texto a sintetizar
-    - language: Idioma (ej: es_MX, en_US)
-    - voice: Voz (ej: ald, amy)
-    - speed: Velocidad (fast, normal, slow)
+    Synthesize text to speech using Piper TTS.
+
+    Parameters:
+    - text: Text to synthesize.
+    - language: Language (e.g., es_MX, en_US).
+    - voice: Voice (e.g., ald, amy).
+    - speed: Speed (fast, normal, slow).
     """
     try:
-        # Construir ruta del modelo
+        # Build the model path.
         model_name = f"{language}-{voice}"
         model_path = MODELS_DIR / model_name / model_name
         
-        # Verificar que existe
+        # Verify that it exists.
         if not (model_path.with_suffix(".onnx")).exists():
             raise HTTPException(
                 status_code=404, 
                 detail=f"Model not found: {model_name}. Available models: GET /models"
             )
         
-        # Generar archivo temporal
+        # Generate a temporary file.
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
             temp_file = tmp.name
         
-        # Calcular speed scale
+        # Calculate the speed scale.
         speed_scales = {
             "fast": "0.8",
             "normal": "1.0",
@@ -118,7 +118,7 @@ async def synthesize(text: str, language: str = "es_MX", voice: str = "ald", spe
         }
         speed_scale = speed_scales.get(speed, "1.0")
         
-        # Ejecutar Piper
+        # Run Piper.
         cmd = [
             "python3", "-m", "piper",
             "--model", str(model_path),
@@ -142,7 +142,7 @@ async def synthesize(text: str, language: str = "es_MX", voice: str = "ald", spe
                 detail=f"Piper error: {stderr.decode()}"
             )
         
-        # Verificar que se creó el archivo
+        # Verify that the file was created.
         if not os.path.exists(temp_file):
             raise HTTPException(status_code=500, detail="Failed to generate audio")
         

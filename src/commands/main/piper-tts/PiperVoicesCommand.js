@@ -25,7 +25,7 @@ class PiperVoicesCommand extends SlashCommand {
       .setThumbnail(MESSAGE_EMBED.langThumbnail);
 
     try {
-      // Consultar modelos disponibles del servidor Piper
+      // Fetch the available models from the Piper server.
       const response = await axios.get('http://piper-tts:8000/models', {
         timeout: 5000
       });
@@ -38,7 +38,7 @@ class PiperVoicesCommand extends SlashCommand {
           value: 'Download a model using: `docker exec piper-tts python3 -m piper.download --voice LANGUAGE-VOICE-medium --output-dir /opt/app/piper-models`\n\nExample: `es_MX-ald-medium`, `en_US-amy-medium`'
         });
       } else {
-        // Agrupar por idioma
+        // Group by language.
         const byLanguage = {};
         models.forEach(model => {
           if (!byLanguage[model.language]) {
@@ -47,7 +47,7 @@ class PiperVoicesCommand extends SlashCommand {
           byLanguage[model.language].push(model);
         });
 
-        // Agregar campos por idioma
+        // Add fields for each language.
         Object.entries(byLanguage).forEach(([language, modelsInLang]) => {
           const modelsList = modelsInLang
             .map(m => `🎤 **${m.name}** (${m.size_mb}MB)`)

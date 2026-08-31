@@ -16,8 +16,8 @@ COPY package.json bun.lock* bunfig.toml* ./
 RUN bun install --production --frozen-lockfile
 
 # Stage 2: Runtime (Distroless)
-# Utilizamos una imagen "distroless" para reducir drásticamente el tamaño y mejorar la seguridad
-# cc-debian12 incluye glibc y otras librerías esenciales necesarias para Bun y módulos nativos
+# We use a distroless image to drastically reduce size and improve security.
+# cc-debian12 includes glibc and other essential libraries required by Bun and native modules.
 FROM gcr.io/distroless/cc-debian13
 
 ARG DATE_CREATED
@@ -31,24 +31,24 @@ LABEL org.opencontainers.image.title="Discord TTS Bot (Distroless)"
 LABEL org.opencontainers.image.description="A Text-to-Speech bot for Discord. Forked and optimized with Bun."
 LABEL org.opencontainers.image.source="https://github.com/devidence-dev/discord-tts-bot"
 
-# Copiamos el binario de Bun desde el builder
+# Copy the Bun binary from the builder.
 COPY --from=builder /usr/local/bin/bun /usr/bin/bun
 
-# Copiamos binarios estáticos de ffmpeg (esenciales para reproducción de audio)
+# Copy static ffmpeg binaries (essential for audio playback).
 COPY --from=mwader/static-ffmpeg:7.1 /ffmpeg /usr/local/bin/
 # COPY --from=mwader/static-ffmpeg:7.1 /ffprobe /usr/local/bin/
 
 WORKDIR /opt/app
 
-# Copiamos las dependencias instaladas y el código fuente
+# Copy installed dependencies and source code.
 COPY --from=builder /opt/app/node_modules ./node_modules
 COPY package.json ./
 COPY src ./src
 COPY provider-data ./provider-data
 COPY config ./config 
 
-# Aseguramos que los binarios estén en el PATH
+# Ensure the binaries are on PATH.
 ENV PATH="/usr/local/bin:/usr/bin:/bin"
 
-# Ejecutamos Bun directamente contra el archivo fuente para evitar la necesidad de una shell
+# Run Bun directly against the source file to avoid requiring a shell.
 CMD ["/usr/bin/bun", "src/app.js"]

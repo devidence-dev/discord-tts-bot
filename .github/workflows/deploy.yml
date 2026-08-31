@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       bump:
-        description: "Cómo incrementar la versión (ignorado si se define custom_tag)"
+        description: "How to increment the version (ignored when custom_tag is set). 'rebuild' rebuilds the image for the current tag without bumping the version—use it when only the base image or language version changed, not the code."
         required: true
         default: patch
         type: choice
@@ -12,8 +12,9 @@ on:
           - patch
           - minor
           - major
+          - rebuild
       custom_tag:
-        description: "Tag personalizado (e.g. v1.2.3). Anula el bump automático si se define."
+        description: "Custom tag (e.g., v1.2.3). Overrides the automatic bump when set."
         required: false
         type: string
       prerelease:
@@ -35,6 +36,7 @@ jobs:
     outputs:
       tag: ${{ steps.semver.outputs.tag }}
       version: ${{ steps.semver.outputs.version }}
+      is_rebuild: ${{ steps.semver.outputs.is_rebuild }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -44,6 +46,8 @@ jobs:
       - name: Calculate semver tag
         id: semver
         run: |
+          IS_REBUILD="false"
+
           if [ -n "${{ inputs.custom_tag }}" ]; then
             TAG="${{ inputs.custom_tag }}"
             [[ "$TAG" == v* ]] || TAG="v$TAG"
@@ -51,32 +55,41 @@ jobs:
             LATEST=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
             [ -z "$LATEST" ] && LATEST="v0.0.0"
 
-            MAJOR=$(echo "$LATEST" | cut -d. -f1 | tr -d 'v')
-            MINOR=$(echo "$LATEST" | cut -d. -f2)
-            PATCH=$(echo "$LATEST" | cut -d. -f3)
-
             BUMP="${{ inputs.bump }}"
             [ -z "$BUMP" ] && BUMP="patch"
 
-            case "$BUMP" in
-              major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
-              minor) MINOR=$((MINOR+1)); PATCH=0 ;;
-              patch) PATCH=$((PATCH+1)) ;;
-            esac
+            if [ "$BUMP" = "rebuild" ]; then
+              # The tag is already published, so there is no new version to calculate.
+              TAG="$LATEST"
+              IS_REBUILD="true"
+            else
+              MAJOR=$(echo "$LATEST" | cut -d. -f1 | tr -d 'v')
+              MINOR=$(echo "$LATEST" | cut -d. -f2)
+              PATCH=$(echo "$LATEST" | cut -d. -f3)
 
-            TAG="v${MAJOR}.${MINOR}.${PATCH}"
+              case "$BUMP" in
+                major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
+                minor) MINOR=$((MINOR+1)); PATCH=0 ;;
+                patch) PATCH=$((PATCH+1)) ;;
+              esac
+
+              TAG="v${MAJOR}.${MINOR}.${PATCH}"
+            fi
           fi
 
-          if [ "${{ inputs.prerelease }}" = "true" ]; then
+          # A prerelease always requires a new tag, so it does not make sense combined
+          # with rebuild (which, by definition, reuses the existing tag); ignore it then.
+          if [ "${{ inputs.prerelease }}" = "true" ] && [ "$IS_REBUILD" != "true" ]; then
             TAG="${TAG}-pre.$(date +%Y%m%d%H%M%S)"
           fi
 
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
-          echo "Calculated version: $TAG"
+          echo "is_rebuild=$IS_REBUILD" >> "$GITHUB_OUTPUT"
+          echo "Calculated version: $TAG (rebuild=$IS_REBUILD)"
 
   # ==========================================
-  # 🏗️ Build & Push image + crear git tag
+  # 🏗️ Build & push image + create Git tag
   # ==========================================
   build:
     name: 🏗️ Build & Push image
@@ -85,6 +98,8 @@ jobs:
     permissions:
       contents: write
       id-token: write # required so this job can request a GitHub OIDC token for Infisical
+    outputs:
+      digest: ${{ steps.digest.outputs.digest }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -117,6 +132,14 @@ jobs:
       - name: "📦 Push ${{ needs.version.outputs.tag }} to GHCR"
         run: docker push ghcr.io/devidence-dev/discord-tts-bot:${{ needs.version.outputs.tag }}
 
+      - name: Resolve pushed image digest
+        id: digest
+        env:
+          TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "ghcr.io/devidence-dev/discord-tts-bot:${TAG}" | cut -d'@' -f2)
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
       - name: "🏷️ Create and push git tag ${{ needs.version.outputs.tag }}"
         env:
           TAG: ${{ needs.version.outputs.tag }}
@@ -142,14 +165,22 @@ jobs:
       - name: "🚀 Bump homelab to ${{ needs.version.outputs.tag }}"
         env:
           HOMELAB_DEPLOY_TOKEN: ${{ secrets.HOMELAB_DEPLOY_TOKEN }}
+          TAG: ${{ needs.version.outputs.tag }}
+          DIGEST: ${{ needs.build.outputs.digest }}
+          IS_REBUILD: ${{ needs.version.outputs.is_rebuild }}
         run: |
           rm -rf /tmp/homelab-discord-tts-bot-deploy
           git clone https://x-access-token:${HOMELAB_DEPLOY_TOKEN}@github.com/devidence-dev/homelab.git /tmp/homelab-discord-tts-bot-deploy
           cd /tmp/homelab-discord-tts-bot-deploy
-          sed -i "s|tag: .*|tag: \"${{ needs.version.outputs.tag }}\"|" \
-            kubernetes/internal-apps/discord-tts-bot/values.yaml
+          VALUES=kubernetes/internal-apps/discord-tts-bot/values.yaml
+          sed -i "s|tag: .*|tag: \"${TAG}\"|" "$VALUES"
+          # Written on every deployment, not only on rebuild: a rebuild keeps the same tag
+          # but produces a new digest, giving ArgoCD an actual diff to synchronize.
+          sed -i "s|digest: .*|digest: \"${DIGEST}\"|" "$VALUES"
           git config user.email "ci@devidence.dev"
           git config user.name "homelab-ci"
-          git add kubernetes/internal-apps/discord-tts-bot/values.yaml
-          git diff --staged --quiet && echo "No changes to commit" || (git commit -m "chore(discord-tts-bot): bump image to ${{ needs.version.outputs.tag }}" && git push)
+          git add "$VALUES"
+          MSG="chore(discord-tts-bot): bump image to ${TAG}"
+          [ "$IS_REBUILD" = "true" ] && MSG="chore(discord-tts-bot): rebuild image (same tag ${TAG})"
+          git diff --staged --quiet && echo "No changes to commit" || (git commit -m "$MSG" && git push)
           rm -rf /tmp/homelab-discord-tts-bot-deploy

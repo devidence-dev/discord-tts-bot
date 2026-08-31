@@ -1,10 +1,10 @@
 [install]
-# Optimizar instalación para producción
+# Optimize installation for production.
 # production = true
 
 [runtime]
-# Usar la API de Node.js nativa para mejor compatibilidad
+# Use the native Node.js API for better compatibility.
 prefer = "node"
 
 [env]
-# Variables de entorno para desarrollo
+# Environment variables for development.

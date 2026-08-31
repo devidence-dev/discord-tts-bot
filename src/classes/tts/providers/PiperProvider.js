@@ -33,18 +33,18 @@ class PiperProvider extends AbstractProvider {
           speed: extras.speed || 'normal'
         };
 
-        // Hacer petición al servicio Piper
+        // Send a request to the Piper service.
         const response = await axios.post(`${this.piperServiceUrl}/synthesize`, null, {
           params,
           responseType: 'arraybuffer',
-          timeout: 30000 // 30 segundos timeout
+          timeout: 30000 // 30-second timeout
         });
 
-        // Guardar audio en archivo temporal
+        // Save the audio to a temporary file.
         const tempFile = `/tmp/piper_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.wav`;
         fs.writeFileSync(tempFile, response.data);
 
-        // Crear payload con la ruta del archivo
+        // Create a payload with the file path.
         const payload = new Payload(tempFile, sentence, PiperProvider.NAME, extras);
         resolve(payload);
       } catch (error) {
