@@ -23,164 +23,19 @@ on:
         default: false
         type: boolean
 
-permissions:
-  contents: write
-
 jobs:
-  # ==========================================
-  # 🏷️ Calcular versión semver
-  # ==========================================
-  version:
-    name: 🏷️ Calculate version
-    runs-on: ubuntu-latest
-    outputs:
-      tag: ${{ steps.semver.outputs.tag }}
-      version: ${{ steps.semver.outputs.version }}
-      is_rebuild: ${{ steps.semver.outputs.is_rebuild }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-
-      - name: Calculate semver tag
-        id: semver
-        run: |
-          IS_REBUILD="false"
-
-          if [ -n "${{ inputs.custom_tag }}" ]; then
-            TAG="${{ inputs.custom_tag }}"
-            [[ "$TAG" == v* ]] || TAG="v$TAG"
-          else
-            LATEST=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
-            [ -z "$LATEST" ] && LATEST="v0.0.0"
-
-            BUMP="${{ inputs.bump }}"
-            [ -z "$BUMP" ] && BUMP="patch"
-
-            if [ "$BUMP" = "rebuild" ]; then
-              # The tag is already published, so there is no new version to calculate.
-              TAG="$LATEST"
-              IS_REBUILD="true"
-            else
-              MAJOR=$(echo "$LATEST" | cut -d. -f1 | tr -d 'v')
-              MINOR=$(echo "$LATEST" | cut -d. -f2)
-              PATCH=$(echo "$LATEST" | cut -d. -f3)
-
-              case "$BUMP" in
-                major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
-                minor) MINOR=$((MINOR+1)); PATCH=0 ;;
-                patch) PATCH=$((PATCH+1)) ;;
-              esac
-
-              TAG="v${MAJOR}.${MINOR}.${PATCH}"
-            fi
-          fi
-
-          # A prerelease always requires a new tag, so it does not make sense combined
-          # with rebuild (which, by definition, reuses the existing tag); ignore it then.
-          if [ "${{ inputs.prerelease }}" = "true" ] && [ "$IS_REBUILD" != "true" ]; then
-            TAG="${TAG}-pre.$(date +%Y%m%d%H%M%S)"
-          fi
-
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
-          echo "is_rebuild=$IS_REBUILD" >> "$GITHUB_OUTPUT"
-          echo "Calculated version: $TAG (rebuild=$IS_REBUILD)"
-
-  # ==========================================
-  # 🏗️ Build & push image + create Git tag
-  # ==========================================
-  build:
-    name: 🏗️ Build & Push image
-    needs: version
-    runs-on: self-hosted
+  deploy:
+    name: 🚀 Build, Push & Deploy
+    uses: devidence-dev/workflows/.github/workflows/cd-build-deploy-semver.yml@v1
+    with:
+      app_name: discord-tts-bot
+      inject_version_and_date_build_args: true
+      values_path: kubernetes/internal-apps/discord-tts-bot/values.yaml
+      bump: ${{ inputs.bump }}
+      custom_tag: ${{ inputs.custom_tag }}
+      prerelease: ${{ inputs.prerelease }}
+    secrets:
+      HOMELAB_DEPLOY_TOKEN: ${{ secrets.HOMELAB_DEPLOY_TOKEN }}
     permissions:
       contents: write
-      id-token: write # required so this job can request a GitHub OIDC token for Infisical
-    outputs:
-      digest: ${{ steps.digest.outputs.digest }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Fetch GHCR_TOKEN from Infisical
-        uses: Infisical/secrets-action@77ab1f4ccd183a543cb5b42435fbd181189f4995 # v1.0.16
-        with:
-          method: "oidc"
-          identity-id: "77942652-da93-4daa-9f33-62534699496b"
-          domain: "https://app.infisical.com"
-          project-slug: "homelab-devidence"
-          env-slug: "prod"
-          secret-path: "/cross"
-          export-type: "env"
-
-      - name: Login to ghcr.io
-        run: docker login ghcr.io -u ${{ github.actor }} -p "$GHCR_TOKEN"
-
-      - name: "🏗️ Build image ${{ needs.version.outputs.tag }}"
-        run: |
-          ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
-          docker build \
-            --platform linux/${ARCH} \
-            --build-arg DATE_CREATED=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
-            --build-arg VERSION=${{ needs.version.outputs.version }} \
-            -f Dockerfile \
-            -t ghcr.io/devidence-dev/discord-tts-bot:${{ needs.version.outputs.tag }} \
-            .
-
-      - name: "📦 Push ${{ needs.version.outputs.tag }} to GHCR"
-        run: docker push ghcr.io/devidence-dev/discord-tts-bot:${{ needs.version.outputs.tag }}
-
-      - name: Resolve pushed image digest
-        id: digest
-        env:
-          TAG: ${{ needs.version.outputs.tag }}
-        run: |
-          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "ghcr.io/devidence-dev/discord-tts-bot:${TAG}" | cut -d'@' -f2)
-          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
-
-      - name: "🏷️ Create and push git tag ${{ needs.version.outputs.tag }}"
-        env:
-          TAG: ${{ needs.version.outputs.tag }}
-        run: |
-          git config user.email "ci@devidence.dev"
-          git config user.name "homelab-ci"
-          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
-            echo "Tag $TAG ya existe, no se recrea."
-          else
-            git tag "$TAG"
-            git push origin "$TAG"
-          fi
-
-  # ==========================================
-  # 🚀 Deploy to production
-  # ==========================================
-  deploy:
-    name: 🚀 Deploy to production
-    needs: [version, build]
-    runs-on: self-hosted
-    environment: production
-    steps:
-      - name: "🚀 Bump homelab to ${{ needs.version.outputs.tag }}"
-        env:
-          HOMELAB_DEPLOY_TOKEN: ${{ secrets.HOMELAB_DEPLOY_TOKEN }}
-          TAG: ${{ needs.version.outputs.tag }}
-          DIGEST: ${{ needs.build.outputs.digest }}
-          IS_REBUILD: ${{ needs.version.outputs.is_rebuild }}
-        run: |
-          rm -rf /tmp/homelab-discord-tts-bot-deploy
-          git clone https://x-access-token:${HOMELAB_DEPLOY_TOKEN}@github.com/devidence-dev/homelab.git /tmp/homelab-discord-tts-bot-deploy
-          cd /tmp/homelab-discord-tts-bot-deploy
-          VALUES=kubernetes/internal-apps/discord-tts-bot/values.yaml
-          sed -i "s|tag: .*|tag: \"${TAG}\"|" "$VALUES"
-          # Written on every deployment, not only on rebuild: a rebuild keeps the same tag
-          # but produces a new digest, giving ArgoCD an actual diff to synchronize.
-          sed -i "s|digest: .*|digest: \"${DIGEST}\"|" "$VALUES"
-          git config user.email "ci@devidence.dev"
-          git config user.name "homelab-ci"
-          git add "$VALUES"
-          MSG="chore(discord-tts-bot): bump image to ${TAG}"
-          [ "$IS_REBUILD" = "true" ] && MSG="chore(discord-tts-bot): rebuild image (same tag ${TAG})"
-          git diff --staged --quiet && echo "No changes to commit" || (git commit -m "$MSG" && git push)
-          rm -rf /tmp/homelab-discord-tts-bot-deploy
+      id-token: write
