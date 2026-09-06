@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM oven/bun:1.4.0-slim AS builder
+FROM oven/bun:1.4.2-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
@@ -17,7 +17,7 @@ RUN bun install --production --frozen-lockfile
 
 # Stage 2: Runtime (Distroless)
 # We use a distroless image to drastically reduce size and improve security.
-# cc-debian12 includes glibc and other essential libraries required by Bun and native modules.
+# cc-debian13 includes glibc and other essential libraries required by Bun and native modules.
 FROM gcr.io/distroless/cc-debian13
 
 ARG DATE_CREATED
